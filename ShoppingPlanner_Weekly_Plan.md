@@ -34,10 +34,10 @@ Operational-документ по pet-проекту. Используется �
 **Код (5–7 ч за неделю):**
 
 День 1–2 — модель и DTO:
-- [ ] Удалить `WeatherForecast.cs` и `Controllers/WeatherForecastController.cs`.
-- [ ] Создать папку `Models/` и в ней `Product.cs`:
+- [x] Удалить `WeatherForecast.cs` и `Controllers/WeatherForecastController.cs`.
+- [x] Создать папку `Models/` и в ней `Product.cs`:
   - поля: `Id (int)`, `Name (string)`, `Category (string)`, `DefaultUnit (string)` (kg, l, pcs), `CreatedAt (DateTime)`.
-- [ ] Создать папку `Dtos/` и в ней `ProductDto.cs`, `CreateProductDto.cs`, `UpdateProductDto.cs`.
+- [x] Создать папку `Dtos/` и в ней `ProductDto.cs`, `CreateProductDto.cs`, `UpdateProductDto.cs`.
 - [ ] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
 
 День 3–4 — in-memory storage и сервис:
