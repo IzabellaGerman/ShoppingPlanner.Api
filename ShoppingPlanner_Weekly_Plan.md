@@ -41,10 +41,10 @@ Operational-документ по pet-проекту. Используется �
 - [x] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
 
 День 3–4 — in-memory storage и сервис:
-- [ ] Создать папку `Services/` и в ней `IProductService.cs` + `ProductService.cs`.
-- [ ] Внутри сервиса — простой `List<Product>` + методы `GetAll`, `GetById`, `Create`, `Update`, `Delete`.
-- [ ] В `Program.cs` зарегистрировать сервис: `builder.Services.AddSingleton<IProductService, ProductService>();`
-- [ ] **Зачем интерфейс:** DI, моки в тестах, замена реализации на EF Core на неделе 3 без правки контроллера.
+- [x] Создать папку `Services/` и в ней `IProductService.cs` + `ProductService.cs`.
+- [x] Внутри сервиса — простой `List<Product>` + методы `GetAll`, `GetById`, `Create`, `Update`, `Delete`.
+- [x] В `Program.cs` зарегистрировать сервис: `builder.Services.AddSingleton<IProductService, ProductService>();`
+- [x] **Зачем интерфейс:** DI, моки в тестах, замена реализации на EF Core на неделе 3 без правки контроллера.
 
 День 5 — контроллер:
 - [ ] Создать `Controllers/ProductsController.cs`.
