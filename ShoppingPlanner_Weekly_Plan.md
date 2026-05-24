@@ -38,7 +38,7 @@ Operational-документ по pet-проекту. Используется �
 - [x] Создать папку `Models/` и в ней `Product.cs`:
   - поля: `Id (int)`, `Name (string)`, `Category (string)`, `DefaultUnit (string)` (kg, l, pcs), `CreatedAt (DateTime)`.
 - [x] Создать папку `Dtos/` и в ней `ProductDto.cs`, `CreateProductDto.cs`, `UpdateProductDto.cs`.
-- [ ] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
+- [x] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
 
 День 3–4 — in-memory storage и сервис:
 - [ ] Создать папку `Services/` и в ней `IProductService.cs` + `ProductService.cs`.
