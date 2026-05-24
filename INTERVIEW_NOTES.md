@@ -49,6 +49,8 @@ C# 11 добавил `required` — компилятор требует иниц
 - Переход на летнее время: один и тот же `DateTime.Now` может встретиться дважды или вообще не встретиться. UTC не имеет DST.
 - Базы данных типа PostgreSQL имеют отдельные типы `timestamp with time zone` и `timestamp without time zone` — с UTC всё однозначно.
 
+**Доказательство, что это работает:** в ответе API `createdAt` приходит как `"2026-05-24T12:30:06.3415619Z"` — суффикс **`Z`** = Zulu time = UTC по ISO 8601.
+
 **Follow-up:**
 - "А если нужно показать юзеру в его локальном времени?" → На клиенте конвертируем UTC → local через `TimeZoneInfo` или на фронте через `Date.toLocaleString()`.
 - "`DateTime` vs `DateTimeOffset`?" → `DateTimeOffset` хранит смещение от UTC явно, надёжнее. Для новых проектов многие рекомендуют его. Но `DateTime` в UTC — тоже валидный выбор, главное — единый стандарт по всему проекту.
@@ -141,6 +143,172 @@ C# 11 добавил `required` — компилятор требует иниц
 - Но правильный production-ответ всё равно — "перенести в БД".
 
 **Follow-up на собесе:** *"Ты использовала Singleton с изменяемым состоянием — это безопасно?"* — Для текущего проекта да, потому что in-memory and low-stakes, но в production я бы либо вынесла состояние в thread-safe коллекцию, либо вообще убрала состояние из сервиса.
+
+---
+
+## Контроллер и HTTP
+
+### Что делает `[ApiController]`
+
+Это атрибут с большой нагрузкой. Без него контроллер тоже работал бы, но `[ApiController]` включает несколько важных автоматизаций:
+
+- **Автоматическая валидация** через DataAnnotations: если DTO не прошёл проверку (`[Required]`, `[StringLength]` и т.д.), ASP.NET сам возвращает `400 Bad Request` с детальным `ProblemDetails`. В контроллере проверять не надо.
+- **`[FromBody]` по умолчанию** для сложных типов — не надо писать атрибут вручную.
+- **`[FromRoute]` по умолчанию** для параметров, имена которых совпадают с шаблоном маршрута.
+- **Ответы в формате RFC 7807** (`ProblemDetails`) для всех ошибок — стандарт для REST API.
+
+**Без `[ApiController]`** нужно было бы вручную: `if (!ModelState.IsValid) return BadRequest(ModelState);` в каждом методе. С атрибутом — никогда.
+
+**Follow-up:**
+- "А если хочется кастомную обработку валидации?" → Можно отключить автоматическую через `builder.Services.Configure<ApiBehaviorOptions>(o => o.SuppressModelStateInvalidFilter = true);` и обрабатывать `ModelState` вручную.
+
+---
+
+### `ControllerBase` vs `Controller`
+
+- **`ControllerBase`** — минимальная база для API без views.
+- **`Controller`** — `ControllerBase` + поддержка MVC views (методы `View()`, `ViewData` и т.д.).
+
+Для REST API views не нужны, берём более лёгкий `ControllerBase`. Это рекомендация Microsoft.
+
+---
+
+### Constructor injection vs альтернативы
+
+```csharp
+private readonly IProductService _productService;
+
+public ProductsController(IProductService productService)
+{
+    _productService = productService;
+}
+```
+
+ASP.NET Core при каждом запросе создаёт контроллер и автоматически передаёт зависимости в конструктор из DI-контейнера.
+
+**Альтернативы и почему constructor injection лучше:**
+- **Property injection** — зависимость не очевидна, можно забыть подставить, поле приходится делать публичным.
+- **Method injection** — передавать сервис в каждый метод-action. Многословно и шумно.
+- **Service locator** (`HttpContext.RequestServices.GetService<...>()`) — антипаттерн, "скрытая" зависимость, класс выглядит самодостаточным, а на деле дёргает контейнер.
+
+Constructor injection честно говорит: "этот класс не может работать без `IProductService`". Видно сразу при чтении кода, легко тестировать (просто передал мок в конструктор).
+
+---
+
+### `ActionResult<T>` vs `IActionResult`
+
+- **`ActionResult<T>`** — сообщает Swagger и автогенераторам клиента, какой тип возвращается при успехе. Используем для GET, POST, PUT (там есть тело ответа).
+- **`IActionResult`** — нет информации о типе тела. Подходит для DELETE с `204 No Content`, где тела вообще нет.
+
+`ActionResult<T>` лучше для документации API — без него Swagger не знает, какой объект описать в схеме ответа.
+
+---
+
+### REST: правильные HTTP-коды (самое важное)
+
+Коды, которые использует наш CRUD:
+
+| Метод | Сценарий | Код |
+|---|---|---|
+| `GET /products` | Список (даже пустой) | **200 OK** + `[]` |
+| `GET /products/{id}` | Найден | **200 OK** + объект |
+| `GET /products/{id}` | Не найден | **404 Not Found** |
+| `POST /products` | Создан | **201 Created** + объект + заголовок `Location` |
+| `POST /products` | Невалидный DTO | **400 Bad Request** + ProblemDetails |
+| `PUT /products/{id}` | Обновлён | **200 OK** + объект |
+| `PUT /products/{id}` | Не найден | **404 Not Found** |
+| `DELETE /products/{id}` | Удалён | **204 No Content** (без тела) |
+| `DELETE /products/{id}` | Не найден | **404 Not Found** |
+
+**Типовые ловушки:**
+- **Пустая коллекция — это НЕ 404.** `GET /products` при отсутствии данных возвращает `200 OK` с `[]`. 404 = "ресурс не существует", а коллекция как ресурс существует, она просто пустая.
+- **POST — это 201, а не 200.** 200 = "успех, что-то отдаю", 201 = "успех, создал новый ресурс, вот его URL в заголовке `Location`".
+- **404 vs 400.** 404 = "ресурс не найден" (запрос сам по себе валиден). 400 = "запрос невалиден" (битый JSON, не прошла валидация).
+
+---
+
+### `CreatedAtAction` и заголовок `Location`
+
+```csharp
+return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
+```
+
+Делает три вещи одновременно:
+1. Возвращает HTTP-код **201 Created**.
+2. Добавляет в ответ заголовок **`Location: /api/products/5`** — URL только что созданного ресурса.
+3. Кладёт объект в тело ответа.
+
+**`nameof(GetById)`** вместо строки `"GetById"` — для рефакторинга. Если переименовать метод в IDE, `nameof` обновится автоматически; строковый литерал — нет, и сломается в рантайме.
+
+**Зачем `Location`:** клиент сразу знает, по какому URL дёргать созданный ресурс. Это REST-стандарт. Многие джуны просто возвращают `Ok(product)` из POST — оно работает, но это не по стандарту, и Swagger/OpenAPI не сможет правильно описать поведение.
+
+---
+
+### `ProblemDetails` и RFC 7807
+
+`[ApiController]` автоматически возвращает ошибки в формате RFC 7807 (`Problem Details for HTTP APIs`):
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Name": ["The Name field is required."]
+  },
+  "traceId": "00-0d694ffa..."
+}
+```
+
+Ключевые особенности:
+- **`content-type: application/problem+json`** — специальный media type для ошибок, не `application/json`.
+- **`type` ссылается на RFC** — это машинно-читаемая категория ошибки.
+- **`traceId`** — уникальный id запроса, по нему можно найти все логи, связанные с этим запросом. Незаменимо в distributed-системах.
+
+**На собесе:** *"Как обрабатываешь ошибки в API?"* → *"Использую `[ApiController]` с DataAnnotations на DTO. Валидационные ошибки автоматически возвращаются в формате ProblemDetails по RFC 7807, с правильным content-type `application/problem+json` и traceId для связи с логами."*
+
+---
+
+### Route constraints — `{id:int}`
+
+```csharp
+[HttpGet("{id:int}")]
+public ActionResult<ProductDto> GetById(int id)
+```
+
+`:int` — это **route constraint**. Если придёт `GET /products/abc`, ASP.NET сразу вернёт 404, не вызывая контроллер. Без constraint метод бы вызвался, и попытался бы парсить "abc" в `int` — упал бы с менее понятной ошибкой.
+
+Другие constraints: `:guid`, `:long`, `:bool`, `:datetime`, `:min(1)`, `:max(100)`, `:length(5)` и др. Маленькая защита от мусора в URL + лучше для документации.
+
+---
+
+### `[Route("api/[controller]")]` и REST-нейминг
+
+`[controller]` — магическая подстановка имени класса без суффикса `Controller`. `ProductsController` → `api/products`.
+
+**Почему `api/` префикс:** общепринятая практика. Отделяет API-эндпоинты от других маршрутов (статика, MVC views).
+
+**Почему множественное число (`products`, не `product`):** REST-конвенция. URL = адрес коллекции ресурсов, поэтому множественное число. `GET /products` — вся коллекция, `GET /products/5` — конкретный элемент *из* коллекции.
+
+---
+
+### Почему `Update` не должен трогать `CreatedAt`
+
+В нашем `ProductService.Update`:
+
+```csharp
+product.Name = dto.Name;
+product.Category = dto.Category;
+product.DefaultUnit = dto.DefaultUnit;
+// CreatedAt НЕ трогаем!
+```
+
+**Почему по полям, а не `_products[i] = newProduct`:**
+- Полная замена сбросила бы `CreatedAt` на текущее время — потеря информации о моменте создания.
+- В будущем, когда добавим `UpdatedAt`, его надо будет трогать, а `CreatedAt` — никогда.
+- `UpdateProductDto` не содержит `Id` и `CreatedAt` — это серверные поля, клиент не должен ими управлять.
+
+**Это типовая ловушка** на собесе и code review: *"Что произойдёт с CreatedAt при PUT?"* — нужно ответить, что оно не меняется и объяснить почему.
 
 ---
 
