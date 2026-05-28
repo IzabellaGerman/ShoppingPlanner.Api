@@ -1,91 +1,96 @@
 # ShoppingPlanner.Api
 
-> REST API for shopping list management. Built with ASP.NET Core 8, EF Core, PostgreSQL, JWT, and Docker.
+> REST API for shopping list management. Built with ASP.NET Core 8.
+> **Status: work in progress — Week 2 of an 8-week build.** See the [Roadmap](#roadmap) for what is done and what is planned.
 
-[![Build](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml/badge.svg)](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml)
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Status](https://img.shields.io/badge/status-work_in_progress-orange)
 
-A backend service that lets users manage shopping lists shared across devices. Authenticated users can create lists, add products with categories and quantities, mark items as purchased, and retrieve their shopping history.
+A backend service that will let users manage shopping lists shared across devices. The end goal: authenticated users create lists, add products with categories and quantities, mark items as purchased, and retrieve their history.
 
-**Live demo:** (coming on week 7) (replace with real URL after deploy)
-**API docs (Swagger):** (coming on week 7)
+I'm building it incrementally and in public — each week adds one production-grade capability (persistence, auth, containerization, CI, deployment). The README is kept honest: it describes what actually runs today, not the final vision.
+
+---
+
+## What works today (Week 2)
+
+A working in-memory CRUD API for the `Product` resource, with a clean controller/service/DTO separation that the rest of the project will build on.
+
+- **`Product` CRUD** — five REST endpoints with correct HTTP semantics:
+  - `GET /api/products` — list all (returns `200` + `[]` when empty)
+  - `GET /api/products/{id}` — `200` if found, `404` if not
+  - `POST /api/products` — `201 Created` + `Location` header
+  - `PUT /api/products/{id}` — `200` if found, `404` if not
+  - `DELETE /api/products/{id}` — `204 No Content`, `404` if not found
+- **DTO / domain separation** — `CreateProductDto`, `UpdateProductDto`, `ProductDto` kept separate from the `Product` domain model.
+- **Validation** — DataAnnotations on DTOs, surfaced automatically by `[ApiController]`. Invalid input returns `400` with an RFC 7807 `ProblemDetails` body (`content-type: application/problem+json`).
+- **Service behind an interface** — `IProductService` / `ProductService`, registered in DI. This is the seam where in-memory storage will be swapped for EF Core in Week 3 without touching the controller.
+- **Swagger / OpenAPI** — interactive docs; all endpoints annotated with `[ProducesResponseType]` so the documented response codes match the real ones.
+- **Tests** — 11 xUnit unit tests for `ProductService` (AAA style), build is warning-free.
+
+Storage is an in-memory `List<Product>` for now — data resets on restart. PostgreSQL persistence lands in Week 3.
 
 ---
 
 ## Why this project exists
 
-I built this as a hands-on way to modernize my .NET stack from legacy ASP.NET / VB.NET to the current ecosystem (ASP.NET Core 8, EF Core, minimal APIs). The goal was to produce a small but production-grade backend with everything a real service needs: authentication, persistence, tests, CI, containerization, and a public deployment.
+I built this as a hands-on way to modernize my .NET stack from legacy ASP.NET / VB.NET to the current ecosystem (ASP.NET Core 8, EF Core). The goal is a small but production-grade backend with everything a real service needs: authentication, persistence, tests, CI, containerization, and a public deployment — added one step at a time.
 
-Earlier iterations of the planner lived as a desktop WPF app in my [ClaudeExperiments](https://github.com/IzabellaGerman/ClaudeExperiments) repository. This is the rebuilt server-side version.
+An earlier iteration of the planner lived as a desktop WPF app in my [ClaudeExperiments](https://github.com/IzabellaGerman/ClaudeExperiments) repository. This is the rebuilt server-side version.
 
 ---
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Language | C# 12 |
-| Framework | ASP.NET Core 8 (Web API) |
-| ORM | Entity Framework Core 8 |
-| Database | PostgreSQL 16 |
-| Authentication | JWT Bearer + ASP.NET Core Identity |
-| API documentation | Swagger / OpenAPI |
-| Validation | FluentValidation |
-| Logging | Serilog (structured JSON) |
-| Mapping | Mapperly (source generator) |
-| Testing | xUnit, FluentAssertions, TestContainers |
-| Containerization | Docker, docker-compose |
-| CI/CD | GitHub Actions |
-| Hosting | Render.com (API) + Neon.tech (PostgreSQL) |
+Legend: **[x]** in use today · **[ ]** planned (see Roadmap).
+
+| Layer | Technology | Status |
+|---|---|---|
+| Language | C# 12 | [x] |
+| Framework | ASP.NET Core 8 (Web API) | [x] |
+| API documentation | Swagger / OpenAPI (Swashbuckle) | [x] |
+| Validation | DataAnnotations + `ProblemDetails` (RFC 7807) | [x] |
+| Testing | xUnit | [x] |
+| ORM | Entity Framework Core 8 | [ ] Week 3 |
+| Database | PostgreSQL 16 | [ ] Week 3 |
+| Authentication | JWT Bearer + ASP.NET Core Identity | [ ] Week 4 |
+| Containerization | Docker, docker-compose | [ ] Week 4 |
+| CI/CD | GitHub Actions | [ ] Week 6 |
+| Hosting | TBD (Railway / Render / Fly.io) | [ ] Week 7 |
 
 ---
 
-## Architecture
+## Target architecture
+
+This is where the project is heading. Today only the **Controllers -> Services -> DTOs** part exists; repositories, EF Core, and PostgreSQL arrive in Week 3.
 
 ```
-┌─────────────┐
-│  Client     │  (Swagger UI, future SPA / mobile)
-└──────┬──────┘
-       │ HTTPS + JWT
-┌──────▼──────────────────────────────────────────┐
-│  ShoppingPlanner.Api                            │
-│                                                 │
-│  Controllers → Services → Repositories → DB     │
-│       │           │            │                │
-│       │           │            └─ EF Core       │
-│       │           └─ Business logic             │
-│       └─ DTOs, validation, auth                 │
-└──────┬──────────────────────────────────────────┘
-       │
-┌──────▼──────┐
-│ PostgreSQL  │
-└─────────────┘
++-------------+
+|   Client    |  (Swagger UI today; SPA / mobile later)
++------+------+
+       | HTTP (+ JWT, from Week 4)
++------v--------------------------------------+
+|  ShoppingPlanner.Api                        |
+|                                             |
+|  Controllers -> Services -> (Repositories)  |
+|       |            |             |          |
+|       |            |             +- EF Core |  (Week 3)
+|       |            +- Business logic        |
+|       +- DTOs, validation, auth             |
++------+--------------------------------------+
+       |
++------v------+
+| PostgreSQL  |  (Week 3)
++-------------+
 ```
 
-The project follows a layered architecture:
+Layering:
 
-- **Controllers** — thin HTTP layer, only routing and DTO mapping
-- **Services** — business logic, ownership checks, orchestration
-- **Repositories** — EF Core queries behind interfaces (testable)
-- **Domain entities** — `User`, `ShoppingList`, `Product`, `Category`, `ShoppingListItem`
-
----
-
-## Features
-
-- [ ] User registration and login with JWT
-- [ ] Refresh tokens
-- [ ] CRUD for shopping lists (only owner can read/edit/delete)
-- [ ] CRUD for products and categories
-- [ ] Add/remove products to a list with quantity and notes
-- [ ] Mark items as purchased
-- [ ] Pagination on list endpoints
-- [ ] Global exception handling middleware
-- [ ] Structured logging with correlation IDs
-- [ ] Health check endpoint
-- [ ] Sharing lists with other users (planned)
-- [ ] AI-suggested categories for new products (planned)
+- **Controllers** — thin HTTP layer: routing, status codes, DTO in/out.
+- **Services** — business logic behind an interface (`IProductService`).
+- **Repositories** — *(planned)* EF Core queries behind interfaces.
+- **Domain entities** — `Product` today; `Category`, `ShoppingList`, `ShoppingListItem`, `User` to follow.
 
 ---
 
@@ -94,98 +99,65 @@ The project follows a layered architecture:
 ### Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
 
-### Run with Docker (recommended)
+No database or Docker needed yet — storage is in-memory at this stage.
+
+### Run it
 
 ```bash
 git clone https://github.com/IzabellaGerman/ShoppingPlanner.Api.git
 cd ShoppingPlanner.Api
-docker-compose up --build
-```
-
-The API is now available at `http://localhost:5000` and Swagger UI at `http://localhost:5000/swagger`.
-
-### Run locally without Docker
-
-```bash
-# 1. Start a PostgreSQL container
-docker run -d --name shoppingplanner-db \
-  -e POSTGRES_PASSWORD=dev \
-  -e POSTGRES_DB=shoppingplanner \
-  -p 5432:5432 \
-  postgres:16
-
-# 2. Apply migrations
-dotnet ef database update --project src/ShoppingPlanner.Api
-
-# 3. Run the API
 dotnet run --project src/ShoppingPlanner.Api
 ```
 
-### Configuration
+Then open Swagger UI at the URL printed in the console (e.g. `http://localhost:5271/swagger`).
 
-Settings live in `appsettings.json` and can be overridden via environment variables.
+### Run the tests
 
-| Key | Description | Example |
-|---|---|---|
-| `ConnectionStrings__Default` | PostgreSQL connection string | `Host=localhost;Database=shoppingplanner;Username=postgres;Password=dev` |
-| `Jwt__Secret` | JWT signing key (min 32 chars) | `super-secret-key-change-in-production` |
-| `Jwt__Issuer` | Token issuer | `shoppingplanner-api` |
-| `Jwt__Audience` | Token audience | `shoppingplanner-clients` |
-| `Jwt__AccessTokenMinutes` | Access token lifetime | `15` |
+```bash
+dotnet test
+```
 
 ---
 
-## API examples
+## API example
 
-### Register
+### Create a product
 
 ```http
-POST /auth/register
+POST /api/products
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
-  "password": "P@ssw0rd!"
+  "name": "Sourdough Bread",
+  "category": "Bakery",
+  "defaultUnit": "pcs"
 }
 ```
 
-### Login
-
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "P@ssw0rd!"
-}
-```
-
-Response:
+Response — `201 Created`, with a `Location` header pointing at the new resource:
 
 ```json
 {
-  "accessToken": "eyJhbGc...",
-  "refreshToken": "...",
-  "expiresIn": 900
+  "id": 1,
+  "name": "Sourdough Bread",
+  "category": "Bakery",
+  "defaultUnit": "pcs",
+  "createdAt": "2026-05-28T17:10:12.0431969Z"
 }
 ```
 
-### Create a shopping list
+Invalid input (e.g. empty `name`) returns `400` with a `ProblemDetails` body:
 
-```http
-POST /shopping-lists
-Authorization: Bearer eyJhbGc...
-Content-Type: application/json
-
+```json
 {
-  "name": "Weekly groceries",
-  "items": [
-    { "productId": 1, "quantity": 2, "note": "any brand" },
-    { "productId": 5, "quantity": 1 }
-  ]
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Name": ["The Name field is required."]
+  },
+  "traceId": "00-..."
 }
 ```
 
@@ -193,83 +165,43 @@ Full reference is in the Swagger UI.
 
 ---
 
-## Testing
-
-```bash
-# Unit tests only
-dotnet test --filter Category=Unit
-
-# Integration tests (requires Docker for TestContainers)
-dotnet test --filter Category=Integration
-
-# Everything
-dotnet test
-```
-
-Current line coverage: ~60% on services and controllers.
-
----
-
-## CI/CD
-
-Every push and pull request triggers a GitHub Actions workflow:
-
-1. Restore dependencies
-2. Build with warnings as errors
-3. Run all tests
-4. Check formatting with `dotnet format`
-5. (On main only) Build and publish a Docker image to ghcr.io
-
-The workflow is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
-
----
-
 ## Project structure
 
 ```
 ShoppingPlanner.Api/
-├── src/
-│   └── ShoppingPlanner.Api/
-│       ├── Controllers/
-│       ├── Services/
-│       ├── Repositories/
-│       ├── Domain/           # Entities
-│       ├── Dtos/
-│       ├── Mappers/          # Mapperly
-│       ├── Validators/       # FluentValidation
-│       ├── Middleware/       # Exception handler
-│       ├── Migrations/       # EF Core
-│       └── Program.cs
-├── tests/
-│   └── ShoppingPlanner.Api.Tests/
-│       ├── Unit/
-│       └── Integration/
-├── .github/workflows/
-│   └── ci.yml
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
++-- src/
+|   +-- ShoppingPlanner.Api/
+|       +-- Controllers/        # ProductsController
+|       +-- Services/           # IProductService, ProductService
+|       +-- Models/             # Product (domain entity)
+|       +-- Dtos/               # CreateProductDto, UpdateProductDto, ProductDto
+|       +-- Program.cs
++-- tests/
+|   +-- ShoppingPlanner.Api.Tests/   # ProductServiceTests (xUnit)
++-- README.md
++-- LICENSE
 ```
+
+Folders for repositories, migrations, middleware, and infrastructure will be added as the corresponding features land.
 
 ---
 
 ## Roadmap
 
-- [x] Week 1: project skeleton, Git workflow, README
-- [ ] Week 2: in-memory CRUD for products and lists
-- [ ] Week 3: PostgreSQL + EF Core migrations, navigation properties
-- [ ] Week 4: JWT authentication, Swagger, Docker
-- [ ] Week 5: unit and integration tests
-- [ ] Week 6: GitHub Actions CI
-- [ ] Week 7: deployment to Render.com
-- [ ] Week 8+: pagination, validation, logging refinements
-- [ ] Future: list sharing, AI-suggested categories, mobile client
+- [x] **Week 1** — project skeleton, Git workflow (feature branch -> PR -> main), README, LICENSE
+- [x] **Week 2** — in-memory `Product` CRUD, DTOs, validation + `ProblemDetails`, Swagger, xUnit tests
+- [ ] **Week 3** — PostgreSQL + EF Core migrations, `Category` entity, navigation properties, async everywhere
+- [ ] **Week 4** — `ShoppingList` / `ShoppingListItem` domain, global exception handling, integration tests
+- [ ] **Week 5–6** — JWT authentication + refresh tokens, ownership checks, Docker Compose
+- [ ] **Week 6** — GitHub Actions CI (build -> test -> Docker image)
+- [ ] **Week 7** — deployment to a free host, live Swagger link in this README
+- [ ] **Future** — pagination, structured logging, list sharing, AI-suggested categories, mobile client
 
 ---
 
 ## About the author
 
-I'm Izabella, a C#/.NET developer based in Prague with 6 years of enterprise experience (financial reporting and ERP systems at Gazprom Neft). After a career break, I'm modernizing my stack and looking for mid-level backend roles in Prague or remote across the EU.
+I'm Izabella, a C#/.NET developer based in Prague with 6 years of enterprise experience (financial reporting and ERP systems). After a career break, I'm modernizing my stack and looking for mid-level backend roles in Prague or remote across the EU. This repository is part of that — built in the open, one production-grade step at a time.
 
 - LinkedIn: [izabella-german](https://www.linkedin.com/in/izabella-german/)
 - GitHub: [@IzabellaGerman](https://github.com/IzabellaGerman)
@@ -279,4 +211,3 @@ I'm Izabella, a C#/.NET developer based in Prague with 6 years of enterprise exp
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
-
