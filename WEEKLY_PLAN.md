@@ -34,32 +34,32 @@ Operational-документ по pet-проекту. Используется �
 **Код (5–7 ч за неделю):**
 
 День 1–2 — модель и DTO:
-- [ ] Удалить `WeatherForecast.cs` и `Controllers/WeatherForecastController.cs`.
-- [ ] Создать папку `Models/` и в ней `Product.cs`:
+- [x] Удалить `WeatherForecast.cs` и `Controllers/WeatherForecastController.cs`.
+- [x] Создать папку `Models/` и в ней `Product.cs`:
   - поля: `Id (int)`, `Name (string)`, `Category (string)`, `DefaultUnit (string)` (kg, l, pcs), `CreatedAt (DateTime)`.
-- [ ] Создать папку `Dtos/` и в ней `ProductDto.cs`, `CreateProductDto.cs`, `UpdateProductDto.cs`.
-- [ ] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
+- [x] Создать папку `Dtos/` и в ней `ProductDto.cs`, `CreateProductDto.cs`, `UpdateProductDto.cs`.
+- [x] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
 
 День 3–4 — in-memory storage и сервис:
-- [ ] Создать папку `Services/` и в ней `IProductService.cs` + `ProductService.cs`.
-- [ ] Внутри сервиса — простой `List<Product>` + методы `GetAll`, `GetById`, `Create`, `Update`, `Delete`.
-- [ ] В `Program.cs` зарегистрировать сервис: `builder.Services.AddSingleton<IProductService, ProductService>();`
-- [ ] **Зачем интерфейс:** DI, моки в тестах, замена реализации на EF Core на неделе 3 без правки контроллера.
+- [x] Создать папку `Services/` и в ней `IProductService.cs` + `ProductService.cs`.
+- [x] Внутри сервиса — простой `List<Product>` + методы `GetAll`, `GetById`, `Create`, `Update`, `Delete`.
+- [x] В `Program.cs` зарегистрировать сервис: `builder.Services.AddSingleton<IProductService, ProductService>();`
+- [x] **Зачем интерфейс:** DI, моки в тестах, замена реализации на EF Core на неделе 3 без правки контроллера.
 
 День 5 — контроллер:
-- [ ] Создать `Controllers/ProductsController.cs`.
-- [ ] Пять методов: `GET /products`, `GET /products/{id}`, `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}`.
-- [ ] Правильные HTTP-коды: 200, 201 (с `CreatedAtAction`), 204, 404, 400.
-- [ ] Валидация через `[Required]`, `[StringLength]` атрибуты на DTO.
+- [x] Создать `Controllers/ProductsController.cs`.
+- [x] Пять методов: `GET /products`, `GET /products/{id}`, `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}`.
+- [x] Правильные HTTP-коды: 200, 201 (с `CreatedAtAction`), 204, 404, 400.
+- [x] Валидация через `[Required]`, `[StringLength]` атрибуты на DTO.
 
 День 6 — тесты:
-- [ ] В `tests/` написать 5–7 unit-тестов для `ProductService` через xUnit.
-- [ ] Структура AAA (Arrange-Act-Assert). Имена тестов: `MethodName_Scenario_ExpectedResult`.
+- [x] В `tests/` написать 5–7 unit-тестов для `ProductService` через xUnit.
+- [x] Структура AAA (Arrange-Act-Assert). Имена тестов: `MethodName_Scenario_ExpectedResult`.
 
 День 7 — оформление:
-- [ ] Прогнать через Swagger UI вручную каждый эндпоинт.
-- [ ] Создать ветку `feature/products-crud-in-memory`, открыть PR в main, смерджить.
-- [ ] Обновить README — поставить галочку на пункт "Products CRUD".
+- [x] Прогнать через Swagger UI вручную каждый эндпоинт.
+- [x] Создать ветку `feature/products-crud-in-memory`, открыть PR в main, смерджить.
+- [x] Обновить README — поставить галочку на пункт "Products CRUD".
 
 **Definition of Done для недели 2:**
 - `dotnet build` — без warnings.
@@ -80,8 +80,8 @@ Operational-документ по pet-проекту. Используется �
 **Код (6–8 ч):**
 
 День 1 — PostgreSQL локально:
-- [ ] Установить Docker Desktop (если ещё нет).
-- [ ] Поднять Postgres контейнером:
+- [x] Установить Docker Desktop (если ещё нет).
+- [x] Поднять Postgres контейнером:
   ```bash
   docker run -d --name shoppingplanner-db \
     -e POSTGRES_PASSWORD=dev \
@@ -92,21 +92,21 @@ Operational-документ по pet-проекту. Используется �
 - [ ] Поставить клиент: DBeaver или pgAdmin. Подключиться, проверить, что БД пустая работает.
 
 День 2 — EF Core пакеты и DbContext:
-- [ ] Добавить пакеты:
+- [x] Добавить пакеты:
   ```bash
   dotnet add src/ShoppingPlanner.Api package Microsoft.EntityFrameworkCore
   dotnet add src/ShoppingPlanner.Api package Npgsql.EntityFrameworkCore.PostgreSQL
   dotnet add src/ShoppingPlanner.Api package Microsoft.EntityFrameworkCore.Design
   ```
-- [ ] Создать папку `Data/` и в ней `AppDbContext.cs` с `DbSet<Product>`.
-- [ ] Connection string в `appsettings.Development.json` (НЕ коммитить пароли — пока dev окей).
-- [ ] Зарегистрировать `AppDbContext` в `Program.cs`.
+- [x] Создать папку `Data/` и в ней `AppDbContext.cs` с `DbSet<Product>`.
+- [x] Connection string в `appsettings.Development.json` (НЕ коммитить пароли — пока dev окей).
+- [x] Зарегистрировать `AppDbContext` в `Program.cs`.
 
 День 3 — первая миграция:
-- [ ] Установить EF tools глобально: `dotnet tool install --global dotnet-ef`.
-- [ ] Создать миграцию: `dotnet ef migrations add InitialCreate --project src/ShoppingPlanner.Api`.
-- [ ] Применить: `dotnet ef database update --project src/ShoppingPlanner.Api`.
-- [ ] Проверить через DBeaver — таблица `Products` должна появиться.
+- [x] Установить EF tools глобально: `dotnet tool install --global dotnet-ef`.
+- [x] Создать миграцию: `dotnet ef migrations add InitialCreate --project src/ShoppingPlanner.Api`.
+- [x] Применить: `dotnet ef database update --project src/ShoppingPlanner.Api`.
+- [x] Проверить через DBeaver — таблица `Products` должна появиться.
 
 День 4–5 — переключить сервис на EF:
 - [ ] Создать `ProductRepository.cs` (или сразу инжектить `AppDbContext` в сервис — на этом этапе оба варианта ок).

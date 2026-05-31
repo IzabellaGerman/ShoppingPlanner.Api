@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace ShoppingPlanner.Api.Controllers;
 
@@ -17,6 +18,7 @@ public class ProductsController : ControllerBase
 
     // GET api/products
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<ProductDto>> GetAll()
         {
         var products = _productService.GetAll();
@@ -25,6 +27,8 @@ public class ProductsController : ControllerBase
 
     // GET api/products/5
     [HttpGet("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<ProductDto> GetById(int id)
         {
         var product = _productService.GetById(id);
@@ -36,6 +40,8 @@ public class ProductsController : ControllerBase
 
     // POST api/products
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<ProductDto> Create(CreateProductDto dto)
         {
         var product = _productService.Create(dto);
@@ -47,6 +53,9 @@ public class ProductsController : ControllerBase
 
     // PUT api/products/5
     [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<ProductDto> Update(int id, UpdateProductDto dto)
         {
         var product = _productService.Update(id, dto);
@@ -58,6 +67,8 @@ public class ProductsController : ControllerBase
 
     // DELETE api/products/5
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult Delete(int id)
         {
         var deleted = _productService.Delete(id);
