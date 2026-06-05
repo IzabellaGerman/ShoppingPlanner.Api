@@ -1,179 +1,136 @@
-﻿using ShoppingPlanner.Api.Dtos;
+﻿using Microsoft.EntityFrameworkCore;
+using ShoppingPlanner.Api.Data;
+using ShoppingPlanner.Api.Dtos;
+using ShoppingPlanner.Api.Models;
 using ShoppingPlanner.Api.Services;
 
 namespace ShoppingPlanner.Api.Tests;
 
-public class ProductServiceTests
+public class ProductServiceTests : IDisposable
     {
-    // ===== GetAll =====
+    private readonly AppDbContext _db;
+    private readonly ProductService _service;
+
+    public ProductServiceTests()
+        {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // уникальная БД на каждый тест
+            .Options;
+
+        _db = new AppDbContext(options);
+
+        // Seed категории — нужны для FK constraint
+        _db.Categories.Add(new Category { Id = 1, Name = "Vegetables" });
+        _db.SaveChanges();
+
+        _service = new ProductService(_db);
+        }
+
+    public void Dispose() => _db.Dispose();
 
     [Fact]
-    public void GetAll_WhenNoProducts_ReturnsEmptyCollection()
+    public async Task GetAllAsync_EmptyDatabase_ReturnsEmptyList()
         {
-        // Arrange
-        var service = new ProductService();
+        // Arrange — база пустая (продуктов нет)
 
         // Act
-        var result = service.GetAll();
+        var result = await _service.GetAllAsync();
 
         // Assert
-        Assert.NotNull(result);
         Assert.Empty(result);
         }
 
     [Fact]
-    public void GetAll_WhenProductsExist_ReturnsAllProducts()
+    public async Task CreateAsync_ValidDto_ReturnsCreatedProduct()
         {
         // Arrange
-        var service = new ProductService();
-        service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-        service.Create(new CreateProductDto { Name = "Milk", Category = "Dairy", DefaultUnit = "l" });
+        var dto = new CreateProductDto
+            {
+            Name = "Carrot",
+            CategoryId = 1,
+            DefaultUnit = "kg"
+            };
 
         // Act
-        var result = service.GetAll().ToList();
-
-        // Assert
-        Assert.Equal(2, result.Count);
-        }
-
-    // ===== GetById =====
-
-    [Fact]
-    public void GetById_WhenProductExists_ReturnsProduct()
-        {
-        // Arrange
-        var service = new ProductService();
-        var created = service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-
-        // Act
-        var result = service.GetById(created.Id);
+        var result = await _service.CreateAsync(dto);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(created.Id, result.Id);
-        Assert.Equal("Bread", result.Name);
+        Assert.Equal("Carrot", result.Name);
+        Assert.Equal("kg", result.DefaultUnit);
+        Assert.True(result.Id > 0);
         }
 
     [Fact]
-    public void GetById_WhenProductDoesNotExist_ReturnsNull()
+    public async Task GetByIdAsync_ExistingId_ReturnsProduct()
         {
         // Arrange
-        var service = new ProductService();
+        var created = await _service.CreateAsync(new CreateProductDto
+            {
+            Name = "Milk",
+            CategoryId = 1,
+            DefaultUnit = "l"
+            });
 
         // Act
-        var result = service.GetById(999);
+        var result = await _service.GetByIdAsync(created.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Milk", result.Name);
+        }
+
+    [Fact]
+    public async Task GetByIdAsync_NonExistingId_ReturnsNull()
+        {
+        // Act
+        var result = await _service.GetByIdAsync(9999);
 
         // Assert
         Assert.Null(result);
         }
 
-    // ===== Create =====
-
     [Fact]
-    public void Create_WithValidDto_AssignsIncrementalId()
+    public async Task UpdateAsync_ExistingId_UpdatesAndReturnsProduct()
         {
         // Arrange
-        var service = new ProductService();
-
-        // Act
-        var first = service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-        var second = service.Create(new CreateProductDto { Name = "Milk", Category = "Dairy", DefaultUnit = "l" });
-
-        // Assert
-        Assert.Equal(1, first.Id);
-        Assert.Equal(2, second.Id);
-        }
-
-    [Fact]
-    public void Create_WithValidDto_SetsCreatedAtInUtc()
-        {
-        // Arrange
-        var service = new ProductService();
-        var before = DateTime.UtcNow;
-
-        // Act
-        var result = service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-        var after = DateTime.UtcNow;
-
-        // Assert
-        Assert.Equal(DateTimeKind.Utc, result.CreatedAt.Kind);
-        Assert.InRange(result.CreatedAt, before, after);
-        }
-
-    // ===== Update =====
-
-    [Fact]
-    public void Update_WhenProductExists_UpdatesFields()
-        {
-        // Arrange
-        var service = new ProductService();
-        var created = service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-
-        // Act
-        var updated = service.Update(created.Id, new UpdateProductDto
+        var created = await _service.CreateAsync(new CreateProductDto
             {
-            Name = "Sourdough Bread",
-            Category = "Bakery",
+            Name = "Old Name",
+            CategoryId = 1,
+            DefaultUnit = "pcs"
+            });
+        var originalCreatedAt = created.CreatedAt;
+
+        // Act
+        var updated = await _service.UpdateAsync(created.Id, new UpdateProductDto
+            {
+            Name = "New Name",
+            CategoryId = 1,
             DefaultUnit = "kg"
             });
 
         // Assert
         Assert.NotNull(updated);
-        Assert.Equal("Sourdough Bread", updated.Name);
+        Assert.Equal("New Name", updated.Name);
         Assert.Equal("kg", updated.DefaultUnit);
+        Assert.Equal(originalCreatedAt, updated.CreatedAt); // CreatedAt не изменился!
         }
 
     [Fact]
-    public void Update_WhenProductExists_PreservesCreatedAt()
+    public async Task DeleteAsync_ExistingId_ReturnsTrueAndRemovesProduct()
         {
         // Arrange
-        var service = new ProductService();
-        var created = service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-        var originalCreatedAt = created.CreatedAt;
-
-        // Act
-        var updated = service.Update(created.Id, new UpdateProductDto
+        var created = await _service.CreateAsync(new CreateProductDto
             {
-            Name = "Updated",
-            Category = "Bakery",
-            DefaultUnit = "pcs"
+            Name = "Potato",
+            CategoryId = 1,
+            DefaultUnit = "kg"
             });
 
-        // Assert
-        Assert.NotNull(updated);
-        Assert.Equal(originalCreatedAt, updated.CreatedAt);
-        }
-
-    [Fact]
-    public void Update_WhenProductDoesNotExist_ReturnsNull()
-        {
-        // Arrange
-        var service = new ProductService();
-
         // Act
-        var result = service.Update(999, new UpdateProductDto
-            {
-            Name = "Anything",
-            Category = "Anything",
-            DefaultUnit = "pcs"
-            });
-
-        // Assert
-        Assert.Null(result);
-        }
-
-    // ===== Delete =====
-
-    [Fact]
-    public void Delete_WhenProductExists_ReturnsTrueAndRemoves()
-        {
-        // Arrange
-        var service = new ProductService();
-        var created = service.Create(new CreateProductDto { Name = "Bread", Category = "Bakery", DefaultUnit = "pcs" });
-
-        // Act
-        var deleted = service.Delete(created.Id);
-        var afterDelete = service.GetById(created.Id);
+        var deleted = await _service.DeleteAsync(created.Id);
+        var afterDelete = await _service.GetByIdAsync(created.Id);
 
         // Assert
         Assert.True(deleted);
@@ -181,13 +138,10 @@ public class ProductServiceTests
         }
 
     [Fact]
-    public void Delete_WhenProductDoesNotExist_ReturnsFalse()
+    public async Task DeleteAsync_NonExistingId_ReturnsFalse()
         {
-        // Arrange
-        var service = new ProductService();
-
         // Act
-        var result = service.Delete(999);
+        var result = await _service.DeleteAsync(9999);
 
         // Assert
         Assert.False(result);

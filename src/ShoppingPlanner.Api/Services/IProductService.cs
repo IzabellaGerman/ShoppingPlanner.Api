@@ -4,11 +4,11 @@ namespace ShoppingPlanner.Api.Services
     {
     public interface IProductService
         {
-        IEnumerable<ProductDto> GetAll();
-        ProductDto? GetById(int id);
-        ProductDto Create(CreateProductDto dto);
-        ProductDto? Update(int id, UpdateProductDto dto);
-        bool Delete(int id);
+        Task<IEnumerable<ProductDto>> GetAllAsync();
+        Task<ProductDto?> GetByIdAsync(int id);
+        Task<ProductDto> CreateAsync(CreateProductDto dto);
+        Task<ProductDto?> UpdateAsync(int id, UpdateProductDto dto);
+        Task<bool> DeleteAsync(int id);
 
         }
     }

@@ -109,17 +109,17 @@ Operational-документ по pet-проекту. Используется �
 - [x] Проверить через DBeaver — таблица `Products` должна появиться.
 
 День 4–5 — переключить сервис на EF:
-- [ ] Создать `ProductRepository.cs` (или сразу инжектить `AppDbContext` в сервис — на этом этапе оба варианта ок).
-- [ ] Переписать `ProductService` под async (`Task<...>`, `await`).
-- [ ] Контроллер тоже async — все методы `async Task<IActionResult>`.
-- [ ] **Внимание:** не используй `.Result` или `.Wait()` нигде. Только `await`. Это типовой вопрос на собесе.
+- [x] Создать `ProductRepository.cs` (или сразу инжектить `AppDbContext` в сервис — на этом этапе оба варианта ок).
+- [x] Переписать `ProductService` под async (`Task<...>`, `await`).
+- [x] Контроллер тоже async — все методы `async Task<IActionResult>`.
+- [x] **Внимание:** не используй `.Result` или `.Wait()` нигде. Только `await`. Это типовой вопрос на собесе.
 
 День 6 — расширить модель:
-- [ ] Добавить сущность `Category` (Id, Name).
-- [ ] У `Product` сделать связь many-to-one: `CategoryId` + navigation property `Category`.
-- [ ] Создать новую миграцию `AddCategories`. Применить.
-- [ ] Эндпоинт `GET /categories` — список всех категорий.
-- [ ] В `GET /products` подгружать категорию через `.Include(p => p.Category)`.
+- [x] Добавить сущность `Category` (Id, Name).
+- [x] У `Product` сделать связь many-to-one: `CategoryId` + navigation property `Category`.
+- [x] Создать новую миграцию `AddCategories`. Применить.
+- [x] Эндпоинт `GET /categories` — список всех категорий.
+- [x] В `GET /products` подгружать категорию через `.Include(p => p.Category)`.
 
 День 7 — оформление:
 - [ ] Seed-данные: 5 категорий, 15 продуктов через `HasData` в `OnModelCreating` или отдельный seeder.
