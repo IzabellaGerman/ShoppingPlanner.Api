@@ -1,11 +1,11 @@
-﻿namespace ShoppingPlanner.Api.Dtos
+﻿namespace ShoppingPlanner.Api.Dtos;
+
+public class ProductDto
     {
-    public class ProductDto
-        {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Category {  get; set; } = string.Empty;
-        public string DefaultUnit {  get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        }
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public int CategoryId { get; set; }
+    public string? CategoryName { get; set; }
+    public required string DefaultUnit { get; set; }
+    public DateTime CreatedAt { get; set; }
     }

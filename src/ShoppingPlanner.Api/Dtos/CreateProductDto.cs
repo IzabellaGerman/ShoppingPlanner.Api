@@ -1,19 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShoppingPlanner.Api.Dtos
+namespace ShoppingPlanner.Api.Dtos;
+
+public class CreateProductDto
     {
-    public class CreateProductDto
-        {
-        [Required]
-        [StringLength(100, MinimumLength = 1)]
-        public string Name { get; set; } = string.Empty;
+    [Required]
+    [StringLength(100, MinimumLength = 1)]
+    public required string Name { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        public string Category { get; set; } = string.Empty;
+    [Range(1, int.MaxValue, ErrorMessage = "CategoryId must be a valid category.")]
+    public int CategoryId { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public string DefaultUnit { get; set; } = string.Empty;
-        }
+    [Required]
+    public required string DefaultUnit { get; set; }
     }
