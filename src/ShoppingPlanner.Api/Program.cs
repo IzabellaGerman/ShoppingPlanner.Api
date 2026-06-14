@@ -15,6 +15,7 @@ builder.Services.AddSwaggerGen();
 //Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
 
 //DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>

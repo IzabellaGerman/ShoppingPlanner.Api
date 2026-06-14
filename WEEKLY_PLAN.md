@@ -122,9 +122,9 @@ Operational-документ по pet-проекту. Используется �
 - [x] В `GET /products` подгружать категорию через `.Include(p => p.Category)`.
 
 День 7 — оформление:
-- [ ] Seed-данные: 5 категорий, 15 продуктов через `HasData` в `OnModelCreating` или отдельный seeder.
-- [ ] Тесты обновить: для EF Core либо in-memory provider, либо мок репозитория. Лучше второй вариант — на собесе спросят про in-memory подводные камни.
-- [ ] PR `feature/ef-core-postgres` → main.
+- [x] Seed-данные: 5 категорий, 15 продуктов через `HasData` в `OnModelCreating` или отдельный seeder.
+- [x] Тесты обновить: для EF Core либо in-memory provider, либо мок репозитория. Лучше второй вариант — на собесе спросят про in-memory подводные камни.
+- [x] PR `feature/ef-core-postgres` → main.
 
 **Definition of Done:**
 - PostgreSQL поднимается одной командой.
@@ -146,20 +146,20 @@ Operational-документ по pet-проекту. Используется �
 **Код (8–10 ч):**
 
 День 1–2 — сущности списков покупок:
-- [ ] Сущность `ShoppingList`: Id, Name, CreatedAt, (потом — UserId на неделе 5–6).
-- [ ] Сущность `ShoppingListItem`: Id, ShoppingListId, ProductId, Quantity (decimal), Note (string?), IsCompleted (bool).
-- [ ] Связи: ShoppingList → many ShoppingListItems; ShoppingListItem → one Product.
-- [ ] Миграция `AddShoppingLists`. Применить.
+- [x] Сущность `ShoppingList`: Id, Name, CreatedAt, (потом — UserId на неделе 5–6).
+- [x] Сущность `ShoppingListItem`: Id, ShoppingListId, ProductId, Quantity (decimal), Note (string?), IsCompleted (bool).
+- [x] Связи: ShoppingList → many ShoppingListItems; ShoppingListItem → one Product.
+- [x] Миграция `AddShoppingLists`. Применить.
 
 День 3–4 — эндпоинты для списков:
-- [ ] `GET /shopping-lists` — все списки (потом фильтр по юзеру).
-- [ ] `GET /shopping-lists/{id}` — один список с items и продуктами (Include).
-- [ ] `POST /shopping-lists` — создать список (с items в теле запроса).
-- [ ] `PUT /shopping-lists/{id}` — переименовать список.
-- [ ] `DELETE /shopping-lists/{id}` — удалить.
-- [ ] `POST /shopping-lists/{id}/items` — добавить продукт в список.
-- [ ] `PATCH /shopping-lists/{id}/items/{itemId}` — отметить как купленный / поменять количество.
-- [ ] `DELETE /shopping-lists/{id}/items/{itemId}` — убрать продукт из списка.
+- [x] `GET /shopping-lists` — все списки (потом фильтр по юзеру).
+- [x] `GET /shopping-lists/{id}` — один список с items и продуктами (Include).
+- [x] `POST /shopping-lists` — создать список (с items в теле запроса).
+- [x] `PUT /shopping-lists/{id}` — переименовать список.
+- [x] `DELETE /shopping-lists/{id}` — удалить.
+- [x] `POST /shopping-lists/{id}/items` — добавить продукт в список.
+- [x] `PATCH /shopping-lists/{id}/items/{itemId}` — отметить как купленный / поменять количество.
+- [x] `DELETE /shopping-lists/{id}/items/{itemId}` — убрать продукт из списка.
 
 День 5 — обработка ошибок:
 - [ ] Глобальный exception handler через middleware или `IExceptionHandler` (.NET 8 фича — упомянуть на собесе).
