@@ -11,7 +11,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Category> Categories { get; set; }
-
+    public DbSet<ShoppingList> ShoppingLists { get; set; }
+    public DbSet<ShoppingListItem> ShoppingListItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,5 +36,17 @@ public class AppDbContext : DbContext
             new Product { Id = 9, Name = "Bananas", CategoryId = 4, DefaultUnit = "kg" },
             new Product { Id = 10, Name = "Orange Juice", CategoryId = 5, DefaultUnit = "l" }
         );
+
+        modelBuilder.Entity<ShoppingListItem>()
+            .HasOne(i => i.ShoppingList)
+            .WithMany(l => l.Items)
+            .HasForeignKey(i => i.ShoppingListId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ShoppingListItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
         }
     }
