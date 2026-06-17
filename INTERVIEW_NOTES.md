@@ -335,3 +335,35 @@ product.DefaultUnit = dto.DefaultUnit;
 - "А что если всё-таки нужно удалить продукт, который используется?" → Либо сначала удалить/переназначить связанные items, либо ввести soft-delete (`IsArchived`) для Product вместо физического удаления.
 
 ---
+### Глобальный exception handler через `IExceptionHandler`
+
+.NET 8 ввёл встроенный интерфейс `IExceptionHandler` для централизованной обработки необработанных исключений — без классического try/catch middleware вручную.
+
+**Реализация:**
+- `GlobalExceptionHandler : IExceptionHandler` с методом `TryHandleAsync(HttpContext, Exception, CancellationToken)`.
+- Логирует исключение через `ILogger<T>` (`_logger.LogError(exception, ...)`).
+- Формирует `ProblemDetails` (RFC 7807) и пишет его в ответ вручную через `httpContext.Response.WriteAsJsonAsync(...)`.
+- Регистрация: `builder.Services.AddExceptionHandler<GlobalExceptionHandler>()` + `builder.Services.AddProblemDetails()`, и в pipeline — `app.UseExceptionHandler()` (должен идти первым, до остальных middleware).
+
+**Почему это важно — главная причина:**
+Без обработчика необработанное исключение (например, обрыв связи с БД) ASP.NET Core в Development-режиме отдаёт клиенту полный stack trace — включая внутренние пути на диске сервера (`C:\!files\_C#\...`), имена классов и SQL-детали. Это утечка информации о внутреннем устройстве системы, потенциально полезная атакующему. С `IExceptionHandler` клиент получает только безопасный, единообразный `ProblemDetails`:
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+  "title": "An unexpected error occurred",
+  "status": 500,
+  "detail": "Please try again later or contact support if the issue persists."
+}
+```
+
+Реальные детали (включая stack trace) остаются только в логах на сервере — туда, где они доступны разработчику, но не клиенту.
+
+**Проверено практически:** временно остановила локальную службу PostgreSQL (`Stop-Service -Name postgresql*`), сделала запрос — раньше клиент получил бы полный `Npgsql.PostgresException` со stack trace, после внедрения handler'а — чистый `500` с `ProblemDetails`.
+
+**Follow-up на собесе:**
+- *"Чем это отличается от `[ApiController]` автоматической обработки `400`?"* → `[ApiController]` обрабатывает только ошибки валидации модели (`400`). `IExceptionHandler` — это catch-all для **необработанных исключений** в любом месте пайплайна (контроллер, сервис, EF Core, middleware) — типично `500`.
+- *"А что если нужно разное поведение для разных типов исключений?"* → Можно зарегистрировать несколько реализаций `IExceptionHandler` — ASP.NET Core вызывает их по очереди до первой, что вернёт `true` из `TryHandleAsync`. Например, отдельный handler для `ValidationException` → `400`, общий — для всего остального → `500`.
+- *"Почему `UseExceptionHandler()` должен быть первым в pipeline?"* → Middleware выполняются по порядку. Если он не первый, исключение из более раннего middleware не попадёт под перехват — обработчик должен оборачивать весь остальной pipeline.
+
+---

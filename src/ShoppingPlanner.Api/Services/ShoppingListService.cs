@@ -8,10 +8,12 @@ namespace ShoppingPlanner.Api.Services
     public class ShoppingListService : IShoppingListService
         {
         private readonly AppDbContext _db;
+        private readonly ILogger<ShoppingListService> _logger;
 
-        public ShoppingListService(AppDbContext db)
+        public ShoppingListService(AppDbContext db, ILogger<ShoppingListService> logger)
             {
             _db = db;
+            _logger = logger;
             }
 
         public async Task<IEnumerable<ShoppingListDto>> GetAllAsync()
@@ -64,6 +66,7 @@ namespace ShoppingPlanner.Api.Services
             _db.ShoppingLists.Add(list);
             await _db.SaveChangesAsync();
 
+            _logger.LogInformation("Created shopping list {ListId} with {ItemCount} items", list.Id, list.Items.Count);
             // Перезагружаем, чтобы Items.Product точно были подгружены
             return MapToDto(list);
             }
@@ -77,11 +80,15 @@ namespace ShoppingPlanner.Api.Services
 
             if (list is null)
                 {
+                _logger.LogWarning("Shopping list {ListId} not found for update", id);
                 return null;
                 }
 
             list.Name = dto.Name;
+
             await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Updated shopping list {ListId}", list.Id);
 
             return MapToDto(list);
             }
@@ -91,11 +98,13 @@ namespace ShoppingPlanner.Api.Services
             var list = await _db.ShoppingLists.FindAsync(id);
             if (list is null)
                 {
+                _logger.LogWarning("Shopping list {ListId} not found for deletion", id);
                 return false;
                 }
 
             _db.ShoppingLists.Remove(list);
             await _db.SaveChangesAsync();
+            _logger.LogInformation("Deleted shopping list {ListId}", id);
             return true;
             }
 
@@ -107,12 +116,14 @@ namespace ShoppingPlanner.Api.Services
 
             if (list is null)
                 {
+                _logger.LogWarning("Shopping list {ListId} not found for adding", listId);
                 return null;
                 }
 
             var product = await _db.Products.FindAsync(dto.ProductId);
             if (product is null)
                 {
+                _logger.LogWarning("Product {ProductId} not found for adding", dto.ProductId);
                 return null;
                 }
 
@@ -129,7 +140,7 @@ namespace ShoppingPlanner.Api.Services
 
             _db.ShoppingListItems.Add(item);
             await _db.SaveChangesAsync();
-
+            _logger.LogInformation("Added item {ItemId} (product {ProductId}) to shopping list {ListId}", item.Id, item.ProductId, listId);
             return MapItemToDto(item);
             }
 
@@ -141,6 +152,7 @@ namespace ShoppingPlanner.Api.Services
 
             if (item is null)
                 {
+                _logger.LogWarning("Shopping list item {ItemId} not found in list {ListId} for update", itemId, listId);
                 return null;
                 }
 
@@ -155,6 +167,7 @@ namespace ShoppingPlanner.Api.Services
                 }
 
             await _db.SaveChangesAsync();
+            _logger.LogInformation("Updated item {ItemId} in shopping list {ListId}", itemId, listId);
             return MapItemToDto(item);
             }
 
@@ -165,11 +178,13 @@ namespace ShoppingPlanner.Api.Services
 
             if (item is null)
                 {
+                _logger.LogWarning("Shopping list item {ItemId} not found in list {ListId} for deletion", itemId, listId);
                 return false;
                 }
 
             _db.ShoppingListItems.Remove(item);
             await _db.SaveChangesAsync();
+            _logger.LogInformation("Removed item {ItemId} in shopping list {ListId}", itemId, listId);
             return true;
             }
 
