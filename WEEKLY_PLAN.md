@@ -162,9 +162,9 @@ Operational-документ по pet-проекту. Используется �
 - [x] `DELETE /shopping-lists/{id}/items/{itemId}` — убрать продукт из списка.
 
 День 5 — обработка ошибок:
-- [ ] Глобальный exception handler через middleware или `IExceptionHandler` (.NET 8 фича — упомянуть на собесе).
-- [ ] Возврат `ProblemDetails` (RFC 7807) при ошибках. Это стандарт, спрашивают.
-- [ ] Логирование через встроенный `ILogger<T>`.
+- [x] Глобальный exception handler через middleware или `IExceptionHandler` (.NET 8 фича — упомянуть на собесе).
+- [x] Возврат `ProblemDetails` (RFC 7807) при ошибках. Это стандарт, спрашивают.
+- [x] Логирование через встроенный `ILogger<T>`.
 
 День 6 — тесты:
 - [ ] Unit-тесты для сервиса ShoppingLists.

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ShoppingPlanner.Api.Data;
+using ShoppingPlanner.Api.Middleware;
 using ShoppingPlanner.Api.Services;
 
 
@@ -16,12 +17,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 //DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
