@@ -9,5 +9,8 @@ namespace ShoppingPlanner.Api.Services
         Task<ShoppingListDto> CreateAsync(CreateShoppingListDto dto);
         Task<ShoppingListDto?> UpdateAsync(int id, UpdateShoppingListDto dto);
         Task<bool> DeleteAsync(int id);
+        Task<ShoppingListItemDto?> AddItemAsync(int listId, CreateShoppingListItemDto dto);
+        Task<ShoppingListItemDto?> UpdateItemAsync(int listId, int itemId, UpdateShoppingListItemDto dto);
+        Task<bool> RemoveItemAsync(int listId, int itemId);
         }
     }
