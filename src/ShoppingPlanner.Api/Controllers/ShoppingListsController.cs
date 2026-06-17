@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Services;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ShoppingPlanner.Api.Controllers;
 
@@ -73,5 +74,50 @@ public class ShoppingListsController : ControllerBase
             }
 
         return NoContent();
+        }
+
+    [HttpPost("{id:int}/items")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ShoppingListItemDto>> AddItem(int id, CreateShoppingListItemDto dto)
+        {
+        var added = await _shoppingListService.AddItemAsync(id, dto);
+        if (added is null)
+            {
+            return NotFound();
+            }
+
+        return Created($"/api/shoppinglists/{id}/items/{added.Id}", added);
+
+        }
+
+    [HttpPatch("{id:int}/items/{itemId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ShoppingListItemDto>> UpdateItem(int id, int itemId, UpdateShoppingListItemDto dto)
+        {
+        var updated = await _shoppingListService.UpdateItemAsync(id, itemId, dto);
+        if (updated is null)
+            {
+            return NotFound();
+            }
+
+        return Ok(updated);
+        }
+
+    [HttpDelete("{id:int}/items/{itemId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveItem(int id, int itemId)
+        {
+        var deleted = await _shoppingListService.RemoveItemAsync(id, itemId);
+        if (!deleted)
+            {
+            return NotFound();
+            }
+
+        return NoContent();
+
         }
     }

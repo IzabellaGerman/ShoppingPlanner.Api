@@ -99,6 +99,80 @@ namespace ShoppingPlanner.Api.Services
             return true;
             }
 
+        public async Task<ShoppingListItemDto?> AddItemAsync(int listId, CreateShoppingListItemDto dto)
+            {
+            var list = await _db.ShoppingLists
+         .Include(l => l.Items)
+         .FirstOrDefaultAsync(l => l.Id == listId);
+
+            if (list is null)
+                {
+                return null;
+                }
+
+            var product = await _db.Products.FindAsync(dto.ProductId);
+            if (product is null)
+                {
+                return null;
+                }
+
+            var item = new ShoppingListItem
+                {
+                ShoppingListId = listId,
+                ShoppingList = list,
+                ProductId = dto.ProductId,
+                Product = product,
+                Quantity = dto.Quantity,
+                Note = dto.Note,
+                IsCompleted = false
+                };
+
+            _db.ShoppingListItems.Add(item);
+            await _db.SaveChangesAsync();
+
+            return MapItemToDto(item);
+            }
+
+        public async Task<ShoppingListItemDto?> UpdateItemAsync(int listId, int itemId, UpdateShoppingListItemDto dto)
+            {
+            var item = await _db.ShoppingListItems
+                 .Include(i => i.Product)
+                 .FirstOrDefaultAsync(l => l.Id == itemId && l.ShoppingListId == listId);
+
+            if (item is null)
+                {
+                return null;
+                }
+
+            if (dto.Quantity is not null)
+                {
+                item.Quantity = dto.Quantity.Value;
+                }
+
+            if (dto.IsCompleted is not null)
+                {
+                item.IsCompleted = dto.IsCompleted.Value;
+                }
+
+            await _db.SaveChangesAsync();
+            return MapItemToDto(item);
+            }
+
+        public async Task<bool> RemoveItemAsync(int listId, int itemId)
+            {
+            var item = await _db.ShoppingListItems
+                .FirstOrDefaultAsync(i => i.Id == itemId && i.ShoppingListId == listId);
+
+            if (item is null)
+                {
+                return false;
+                }
+
+            _db.ShoppingListItems.Remove(item);
+            await _db.SaveChangesAsync();
+            return true;
+            }
+
         private static ShoppingListDto MapToDto(ShoppingList list)
             {
             return new ShoppingListDto
@@ -117,5 +191,20 @@ namespace ShoppingPlanner.Api.Services
                     }).ToList()
                 };
             }
-        }
+
+        private static ShoppingListItemDto MapItemToDto(ShoppingListItem item)
+            {
+            
+               return new ShoppingListItemDto
+                   {                   
+                    Id = item.Id,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product.Name,
+                    Quantity = item.Quantity,
+                    Note = item.Note,
+                    IsCompleted = item.IsCompleted
+                    
+                   };
+            }
+        }    
     }
