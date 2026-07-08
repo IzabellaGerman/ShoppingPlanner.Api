@@ -19,186 +19,238 @@ Operational-документ по pet-проекту. Используется �
 - [x] Структура: `src/`, `tests/`, `.sln`, `.gitignore`, `LICENSE`, `README.md`
 - [x] Первый PR закрыт в main (`feat: initial ASP.NET Core 8 Web API project setup (#1)`)
 
-**Где остановилась:** скелет проекта стоит, демо-эндпоинт `/weatherforecast` работает, Swagger UI открывается. Следующий шаг — реальный код.
+---
+
+### ✅ Неделя 2 — C# refresh + первый CRUD (в памяти) (СДЕЛАНО)
+
+- [x] `Product` модель + DTO (`CreateProductDto`, `UpdateProductDto`, `ProductDto`)
+- [x] `IProductService` / `ProductService` с in-memory `List<Product>`
+- [x] `ProductsController` — 5 эндпоинтов, правильные HTTP-коды
+- [x] Валидация через DataAnnotations, `[ApiController]`
+- [x] Swagger / OpenAPI с `[ProducesResponseType]`
+- [x] 11 xUnit unit-тестов для `ProductService` (AAA)
+- [x] PR `feature/products-crud-in-memory` → main
 
 ---
 
-### Неделя 2 — C# refresh + первый CRUD (в памяти)
+### ✅ Неделя 3 — EF Core + PostgreSQL (СДЕЛАНО)
 
-**Цель:** один работающий ресурс `Product` с CRUD-эндпоинтами в памяти, чтобы вспомнить ASP.NET Core и закрыть страх перед чистым проектом.
-
-**Учёба (5–6 ч за неделю):**
-- [ ] Nick Chapsas — "ASP.NET Core for Beginners" на YouTube (~5 часов). Смотрим **до раздела про EF Core**, его делаем на неделе 3.
-- [ ] Параллельно: дочитать гайд Microsoft "Tutorial: Create a controller-based web API with ASP.NET Core" (~1 час).
-
-**Код (5–7 ч за неделю):**
-
-День 1–2 — модель и DTO:
-- [x] Удалить `WeatherForecast.cs` и `Controllers/WeatherForecastController.cs`.
-- [x] Создать папку `Models/` и в ней `Product.cs`:
-  - поля: `Id (int)`, `Name (string)`, `Category (string)`, `DefaultUnit (string)` (kg, l, pcs), `CreatedAt (DateTime)`.
-- [x] Создать папку `Dtos/` и в ней `ProductDto.cs`, `CreateProductDto.cs`, `UpdateProductDto.cs`.
-- [x] **Почему DTO отдельно от Model:** на собеседовании всегда спрашивают. Domain model — внутреннее представление, DTO — что выставлено наружу. Это паттерн для всех будущих сущностей.
-
-День 3–4 — in-memory storage и сервис:
-- [x] Создать папку `Services/` и в ней `IProductService.cs` + `ProductService.cs`.
-- [x] Внутри сервиса — простой `List<Product>` + методы `GetAll`, `GetById`, `Create`, `Update`, `Delete`.
-- [x] В `Program.cs` зарегистрировать сервис: `builder.Services.AddSingleton<IProductService, ProductService>();`
-- [x] **Зачем интерфейс:** DI, моки в тестах, замена реализации на EF Core на неделе 3 без правки контроллера.
-
-День 5 — контроллер:
-- [x] Создать `Controllers/ProductsController.cs`.
-- [x] Пять методов: `GET /products`, `GET /products/{id}`, `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}`.
-- [x] Правильные HTTP-коды: 200, 201 (с `CreatedAtAction`), 204, 404, 400.
-- [x] Валидация через `[Required]`, `[StringLength]` атрибуты на DTO.
-
-День 6 — тесты:
-- [x] В `tests/` написать 5–7 unit-тестов для `ProductService` через xUnit.
-- [x] Структура AAA (Arrange-Act-Assert). Имена тестов: `MethodName_Scenario_ExpectedResult`.
-
-День 7 — оформление:
-- [x] Прогнать через Swagger UI вручную каждый эндпоинт.
-- [x] Создать ветку `feature/products-crud-in-memory`, открыть PR в main, смерджить.
-- [x] Обновить README — поставить галочку на пункт "Products CRUD".
-
-**Definition of Done для недели 2:**
-- `dotnet build` — без warnings.
-- `dotnet test` — все зелёные.
-- В Swagger 5 эндпоинтов для Products, ручная проверка прошла.
-- PR закрыт в main, на GitHub видно зелёный коммит.
+- [x] Нативный PostgreSQL на Windows (порт 5432), база `shoppingplanner`
+- [x] `AppDbContext`, пакеты Npgsql + EF Core Design
+- [x] Миграции: `InitialCreate`, `AddCategories`, `SeedData`
+- [x] `ProductService` переписан на async (EF Core)
+- [x] `Category` сущность, связь many-to-one с `Product`
+- [x] `CategoriesController` — полный CRUD
+- [x] Seed-данные: 5 категорий, 15 продуктов
+- [x] Тесты обновлены (EF Core InMemory provider + Moq для контроллеров)
+- [x] PR `feature/ef-core-postgres` → main
 
 ---
 
-### Неделя 3 — EF Core + PostgreSQL
+### ✅ Неделя 4 — Доменная логика + полировка месяца 1 (СДЕЛАНО)
 
-**Цель:** заменить in-memory storage на реальную БД через EF Core, добавить связанные сущности.
+- [x] `ShoppingList` и `ShoppingListItem` сущности, миграция `AddShoppingLists`
+- [x] `DeleteBehavior.Cascade` для Items, `DeleteBehavior.Restrict` для Product (задокументировано в `INTERVIEW_NOTES.md`)
+- [x] `ShoppingListsController` — 8 эндпоинтов (CRUD + item-операции)
+- [x] `ShoppingListService` — все async методы, `MapToDto` helper
+- [x] Глобальный exception handler (`IExceptionHandler`, .NET 8), RFC 7807 `ProblemDetails`
+- [x] Структурное логирование через `ILogger<T>`
+- [x] 16 xUnit unit-тестов для `ShoppingListService` (EF Core InMemory + `NullLogger.Instance`)
+- [x] README обновлён до Week 4
+- [x] PR `feature/shopping-lists` + `feature/shopping-list-tests` + `docs/update-readme` → main
 
-**Учёба (4–5 ч):**
-- [ ] Nick Chapsas — "Entity Framework Core for Beginners" (~3 часа).
-- [ ] Microsoft Docs — Migrations overview (~30 мин).
-
-**Код (6–8 ч):**
-
-День 1 — PostgreSQL локально:
-- [x] Установить Docker Desktop (если ещё нет).
-- [x] Поднять Postgres контейнером:
-  ```bash
-  docker run -d --name shoppingplanner-db \
-    -e POSTGRES_PASSWORD=dev \
-    -e POSTGRES_DB=shoppingplanner \
-    -p 5432:5432 \
-    postgres:16
-  ```
-- [ ] Поставить клиент: DBeaver или pgAdmin. Подключиться, проверить, что БД пустая работает.
-
-День 2 — EF Core пакеты и DbContext:
-- [x] Добавить пакеты:
-  ```bash
-  dotnet add src/ShoppingPlanner.Api package Microsoft.EntityFrameworkCore
-  dotnet add src/ShoppingPlanner.Api package Npgsql.EntityFrameworkCore.PostgreSQL
-  dotnet add src/ShoppingPlanner.Api package Microsoft.EntityFrameworkCore.Design
-  ```
-- [x] Создать папку `Data/` и в ней `AppDbContext.cs` с `DbSet<Product>`.
-- [x] Connection string в `appsettings.Development.json` (НЕ коммитить пароли — пока dev окей).
-- [x] Зарегистрировать `AppDbContext` в `Program.cs`.
-
-День 3 — первая миграция:
-- [x] Установить EF tools глобально: `dotnet tool install --global dotnet-ef`.
-- [x] Создать миграцию: `dotnet ef migrations add InitialCreate --project src/ShoppingPlanner.Api`.
-- [x] Применить: `dotnet ef database update --project src/ShoppingPlanner.Api`.
-- [x] Проверить через DBeaver — таблица `Products` должна появиться.
-
-День 4–5 — переключить сервис на EF:
-- [x] Создать `ProductRepository.cs` (или сразу инжектить `AppDbContext` в сервис — на этом этапе оба варианта ок).
-- [x] Переписать `ProductService` под async (`Task<...>`, `await`).
-- [x] Контроллер тоже async — все методы `async Task<IActionResult>`.
-- [x] **Внимание:** не используй `.Result` или `.Wait()` нигде. Только `await`. Это типовой вопрос на собесе.
-
-День 6 — расширить модель:
-- [x] Добавить сущность `Category` (Id, Name).
-- [x] У `Product` сделать связь many-to-one: `CategoryId` + navigation property `Category`.
-- [x] Создать новую миграцию `AddCategories`. Применить.
-- [x] Эндпоинт `GET /categories` — список всех категорий.
-- [x] В `GET /products` подгружать категорию через `.Include(p => p.Category)`.
-
-День 7 — оформление:
-- [x] Seed-данные: 5 категорий, 15 продуктов через `HasData` в `OnModelCreating` или отдельный seeder.
-- [x] Тесты обновить: для EF Core либо in-memory provider, либо мок репозитория. Лучше второй вариант — на собесе спросят про in-memory подводные камни.
-- [x] PR `feature/ef-core-postgres` → main.
-
-**Definition of Done:**
-- PostgreSQL поднимается одной командой.
-- Миграции работают (`dotnet ef database update`).
-- Все эндпоинты Products работают с реальной БД.
-- Есть Category и связь с Product.
-- Тесты зелёные.
+**Definition of Done месяца 1 — выполнено:**
+- Работающее API с тремя сущностями (Product, Category, ShoppingList) на PostgreSQL ✅
+- Async везде ✅
+- Swagger показывает осмысленные эндпоинты с DTO ✅
+- 16 тестов, все зелёные ✅
+- README выглядит как у production-проекта ✅
+- Регулярные коммиты через PR-flow на GitHub ✅
 
 ---
 
-### Неделя 4 — Доменная логика + полировка месяца 1
+## Месяц 2 — Auth + Infrastructure (portfolio-ready)
 
-**Цель:** добавить главную сущность проекта — `ShoppingList` — и связи. К концу недели проект должен выглядеть как "реальный планировщик покупок", а не CRUD-демо.
+### Неделя 5 — JWT аутентификация
 
-**Учёба (3 ч):**
-- [ ] Nick Chapsas — видео про "Repository Pattern" и "Unit of Work" (~1 час). Решить — оставлять как есть или внедрять.
-- [ ] Глава "REST API design best practices" из любого источника (Microsoft Docs / Microservices.io).
+**Цель:** пользователи могут регистрироваться, логиниться и получать JWT-токен. Защищённые эндпоинты доступны только с токеном.
+
+**Учёба (3–4 ч):**
+- [ ] Nick Chapsas — "ASP.NET Core JWT Authentication" на YouTube (~1.5 часа)
+- [ ] Microsoft Docs — "Overview of ASP.NET Core authentication" (~30 мин)
+- [ ] Прочитать про разницу `Authentication` vs `Authorization` — на собесе спрашивают всегда
 
 **Код (8–10 ч):**
 
-День 1–2 — сущности списков покупок:
-- [x] Сущность `ShoppingList`: Id, Name, CreatedAt, (потом — UserId на неделе 5–6).
-- [x] Сущность `ShoppingListItem`: Id, ShoppingListId, ProductId, Quantity (decimal), Note (string?), IsCompleted (bool).
-- [x] Связи: ShoppingList → many ShoppingListItems; ShoppingListItem → one Product.
-- [x] Миграция `AddShoppingLists`. Применить.
+День 1 — User модель и Identity:
+- [ ] Добавить пакет `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
+- [ ] Создать `ApplicationUser : IdentityUser` в `Models/`
+- [ ] Изменить `AppDbContext : IdentityDbContext<ApplicationUser>`
+- [ ] Миграция `AddIdentity`. Применить.
+- [ ] **Почему Identity, а не вручную:** готовая реализация хэширования паролей, управления пользователями, claims. На собесе: "не изобретаем колесо".
 
-День 3–4 — эндпоинты для списков:
-- [x] `GET /shopping-lists` — все списки (потом фильтр по юзеру).
-- [x] `GET /shopping-lists/{id}` — один список с items и продуктами (Include).
-- [x] `POST /shopping-lists` — создать список (с items в теле запроса).
-- [x] `PUT /shopping-lists/{id}` — переименовать список.
-- [x] `DELETE /shopping-lists/{id}` — удалить.
-- [x] `POST /shopping-lists/{id}/items` — добавить продукт в список.
-- [x] `PATCH /shopping-lists/{id}/items/{itemId}` — отметить как купленный / поменять количество.
-- [x] `DELETE /shopping-lists/{id}/items/{itemId}` — убрать продукт из списка.
+День 2 — JWT настройка:
+- [ ] Добавить пакет `Microsoft.AspNetCore.Authentication.JwtBearer`
+- [ ] В `appsettings.json` добавить секцию `Jwt`: `Key`, `Issuer`, `Audience`, `ExpiresInMinutes`
+- [ ] В `Program.cs` настроить `AddAuthentication` + `AddJwtBearer`
+- [ ] `app.UseAuthentication()` — до `app.UseAuthorization()` (порядок важен!)
+- [ ] **На собесе:** объяснить разницу между `UseAuthentication` и `UseAuthorization`
 
-День 5 — обработка ошибок:
-- [x] Глобальный exception handler через middleware или `IExceptionHandler` (.NET 8 фича — упомянуть на собесе).
-- [x] Возврат `ProblemDetails` (RFC 7807) при ошибках. Это стандарт, спрашивают.
-- [x] Логирование через встроенный `ILogger<T>`.
+День 3 — Register / Login эндпоинты:
+- [ ] Создать `AuthController` с двумя эндпоинтами: `POST /api/auth/register` и `POST /api/auth/login`
+- [ ] DTOs: `RegisterDto` (Email, Password), `LoginDto` (Email, Password), `AuthResponseDto` (Token, ExpiresAt)
+- [ ] `Register`: создать юзера через `UserManager<ApplicationUser>.CreateAsync`
+- [ ] `Login`: проверить пароль через `UserManager.CheckPasswordAsync`, сгенерировать токен
+- [ ] Метод `GenerateJwtToken(ApplicationUser user)` — приватный, в контроллере или отдельном сервисе
 
-День 6 — тесты:
-- [x] Unit-тесты для сервиса ShoppingLists.
-- [ ] Хотя бы 2–3 integration-теста через `WebApplicationFactory<Program>` — это покажет на собесе, что ты понимаешь, как тестировать ASP.NET-приложение целиком.
-- [ ] Цель — линейное покрытие минимум 40–50% к концу месяца 1.
+День 4 — Защита эндпоинтов:
+- [ ] Добавить `[Authorize]` на `ShoppingListsController`
+- [ ] Добавить `UserId` поле в `ShoppingList` модель — миграция `AddUserIdToShoppingList`
+- [ ] В `ShoppingListService` фильтровать списки по `UserId` из claims токена
+- [ ] Вспомогательный метод: получить `userId` из `HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)`
+- [ ] **На собесе:** объяснить claims — это данные внутри JWT-токена, не требуют обращения к БД при каждом запросе
 
-День 7 — оформление и ретроспектива месяца 1:
-- [ ] Обновить README: убрать заглушки "coming on week X" с того, что уже сделано.
-- [ ] Скриншоты Swagger UI в README.
-- [ ] Записать в дневник: что было трудно, что узнала нового, какие концепции до конца не понятны.
-- [ ] PR `feature/shopping-lists` → main.
+День 5 — Тесты для Auth:
+- [ ] Unit-тест: `GenerateJwtToken` возвращает токен с правильными claims
+- [ ] Обновить существующие `ShoppingListService` тесты — добавить `UserId` в seed-данные
+- [ ] **Не тестировать Identity напрямую** — это внешняя библиотека, тестируем свою логику вокруг неё
 
-**Definition of Done месяца 1:**
-- Работающее API с тремя сущностями (Product, Category, ShoppingList) на PostgreSQL.
-- Async везде.
-- Swagger показывает осмысленные эндпоинты с DTO.
-- Тесты есть, проходят.
-- README выглядит как у production-проекта (не "Trying to apply MVVM pattern").
-- На GitHub видно регулярные коммиты через PR-flow, а не "Initial commit".
+День 6–7 — Полировка и PR:
+- [ ] Проверить в Swagger: Register → Login → скопировать токен → Authorize → защищённые эндпоинты работают
+- [ ] Swagger настроить для JWT: `AddSecurityDefinition` + `AddSecurityRequirement` в `Program.cs`
+- [ ] Добавить в `INTERVIEW_NOTES.md`: JWT структура (header.payload.signature), stateless auth, claims
+- [ ] PR `feature/jwt-auth` → main
+
+**Definition of Done:**
+- `POST /api/auth/register` создаёт пользователя
+- `POST /api/auth/login` возвращает JWT токен
+- `GET /api/shopping-lists` без токена → 401
+- `GET /api/shopping-lists` с токеном → только списки этого пользователя
+- Swagger UI позволяет авторизоваться и тестировать защищённые эндпоинты
+- Тесты зелёные
 
 ---
 
-## Что дальше — превью месяца 2
+### Неделя 6 — Docker + GitHub Actions CI
 
-(Детальный недельный план составим в конце месяца 1, когда увидим скорость.)
+**Цель:** весь стек запускается одной командой через Docker Compose. GitHub Actions запускает build и тесты на каждый PR.
 
-**Месяц 2 целиком про:**
-- Аутентификация (JWT + refresh tokens, ASP.NET Core Identity).
-- Авторизация — пользователь видит только свои списки.
-- Docker Compose для всего стека (API + Postgres одной командой).
-- GitHub Actions: build → test → docker image на каждый PR.
-- Deploy на бесплатный хостинг (Railway / Render / Fly.io) — чтобы в README была живая ссылка.
+**Учёба (2–3 ч):**
+- [ ] Docker официальный туториал "Get started" — часть 1–3 (~1 час)
+- [ ] GitHub Actions quickstart (~30 мин)
 
-К концу месяца 2 проект готов как portfolio piece: можно дать ссылку рекрутеру, и он откроет работающий Swagger.
+**Код (6–8 ч):**
+
+День 1–2 — Dockerfile:
+- [ ] Создать `Dockerfile` в корне репо (multi-stage build):
+  - Stage 1 `build`: `mcr.microsoft.com/dotnet/sdk:8.0` — restore, build, publish
+  - Stage 2 `runtime`: `mcr.microsoft.com/dotnet/aspnet:8.0` — копируем publish output
+- [ ] Проверить: `docker build -t shoppingplanner-api .` собирается без ошибок
+- [ ] `docker run -p 8080:8080 shoppingplanner-api` — API отвечает
+- [ ] **На собесе:** объяснить multi-stage build — зачем два слоя (SDK тяжелее runtime, в production не нужен компилятор)
+
+День 3 — Docker Compose:
+- [ ] Создать `docker-compose.yml` в корне:
+  - сервис `api` — из нашего Dockerfile, порт 8080
+  - сервис `db` — `postgres:16`, volume для данных, env-переменные
+  - зависимость: `api` depends_on `db`
+- [ ] Connection string в `docker-compose.yml` через env-переменную `ConnectionStrings__DefaultConnection`
+- [ ] `docker compose up` — оба сервиса стартуют, API подключается к БД
+- [ ] **На собесе:** volumes — почему важны (данные не пропадают при перезапуске контейнера)
+
+День 4 — Environment и secrets:
+- [ ] `.env` файл для локальных секретов (JWT Key, DB password) — добавить в `.gitignore`
+- [ ] Убедиться, что в `appsettings.json` нет реальных паролей
+- [ ] README: обновить "Getting started" — теперь есть два способа запуска (локально и через Docker)
+
+День 5–6 — GitHub Actions:
+- [ ] Создать `.github/workflows/ci.yml`
+- [ ] Триггер: `push` и `pull_request` на `main`
+- [ ] Jobs:
+  - `build`: `dotnet restore` → `dotnet build --no-restore`
+  - `test`: `dotnet test --no-build`
+- [ ] Проверить: открыть PR → GitHub Actions запускается → зелёная галочка
+- [ ] Добавить badge в README: `![CI](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml/badge.svg)`
+
+День 7 — PR и полировка:
+- [ ] PR `feature/docker-ci` → main
+- [ ] Добавить в `INTERVIEW_NOTES.md`: зачем Docker (воспроизводимость среды), зачем CI (не ломаем main)
+
+**Definition of Done:**
+- `docker compose up` поднимает API + PostgreSQL, Swagger открывается на `localhost:8080/swagger`
+- GitHub Actions зелёный на каждом PR
+- README содержит CI badge и инструкции по Docker
+
+---
+
+### Неделя 7 — Deploy + финальная полировка
+
+**Цель:** живая ссылка в README. Рекрутер может открыть Swagger и потыкать API.
+
+**Учёба (1 ч):**
+- [ ] Документация выбранного хостинга (Railway / Render / Fly.io) — Getting Started
+
+**Код (5–6 ч):**
+
+День 1–2 — Выбор хостинга и деплой:
+- [ ] Railway (рекомендуется — простой, есть бесплатный tier, поддерживает Docker)
+- [ ] Подключить GitHub репо → Railway автоматически деплоит из `main`
+- [ ] Настроить env-переменные в Railway UI: Connection String, JWT Key
+- [ ] PostgreSQL как Railway сервис (или внешний — Neon.tech бесплатный PostgreSQL)
+- [ ] Применить миграции на prod БД
+
+День 3 — Production настройки:
+- [ ] `appsettings.Production.json` — убрать Development-специфичные настройки
+- [ ] Health check эндпоинт: `GET /health` → `200 OK` (для мониторинга хостинга)
+  ```csharp
+  app.MapHealthChecks("/health");
+  builder.Services.AddHealthChecks();
+  ```
+- [ ] HTTPS redirect: `app.UseHttpsRedirection()`
+- [ ] Swagger только в Development: `if (app.Environment.IsDevelopment()) { app.UseSwagger(); ... }`
+  - **Внимание:** для portfolio удобнее оставить Swagger в production тоже — чтобы рекрутер мог потыкать
+
+День 4–5 — Финальная полировка:
+- [ ] README: добавить живую ссылку на Swagger
+- [ ] README: добавить скриншот Swagger UI
+- [ ] Пройтись по всем `INTERVIEW_NOTES.md` — дополнить пропущенные темы
+- [ ] Проверить: `dotnet build` без warnings, `dotnet test` все зелёные
+- [ ] Убедиться, что все PR смержены, ветки удалены
+
+День 6–7 — Ретроспектива месяца 2:
+- [ ] Записать: что было труднее всего (JWT? Docker?), что теперь понимаешь лучше
+- [ ] Составить список тем для повторения перед собеседованиями (из `INTERVIEW_NOTES.md`)
+- [ ] PR `feature/deploy-production` → main
+
+**Definition of Done месяца 2:**
+- Живой URL в README, Swagger открывается
+- Register → Login → авторизованные запросы работают в production
+- GitHub Actions зелёный
+- `docker compose up` локально работает
+- Все тесты зелёные
+
+---
+
+### Неделя 8 — Буферная неделя / бонус
+
+Если недели 5–7 прошли по плану — выбери одно из:
+
+**Опция A — Refresh Tokens:**
+- [ ] Добавить `RefreshToken` сущность (токен, userId, expiresAt, isRevoked)
+- [ ] Эндпоинт `POST /api/auth/refresh` — принимает refresh token, возвращает новый JWT
+- [ ] Эндпоинт `POST /api/auth/logout` — инвалидирует refresh token
+- [ ] **На собесе:** зачем refresh tokens (короткий JWT + долгий refresh = безопасность без постоянного логина)
+
+**Опция B — Pagination + Filtering:**
+- [ ] `GET /api/shopping-lists?page=1&pageSize=10` — пагинация
+- [ ] `GET /api/products?category=Dairy&search=milk` — фильтрация
+- [ ] Возвращать `PaginatedResponse<T>` с `totalCount`, `page`, `pageSize`
+- [ ] **На собесе:** cursor-based vs offset pagination — когда что использовать
+
+**Опция C — Подготовка к собеседованиям:**
+- [ ] Пройтись по всем темам в `INTERVIEW_NOTES.md` вслух
+- [ ] SQL: correlated subqueries (было выявлено как слабое место)
+- [ ] Порепетировать "расскажи о проекте" в 2–3 минуты
 
 ---
 
@@ -208,9 +260,9 @@ Operational-документ по pet-проекту. Используется �
 2. **Коммиты по Conventional Commits:** `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`. На собесе плюс.
 3. **Дневник в `JOURNAL.md` в корне репо** (или отдельный файл). После каждой сессии — 2–3 строчки: что сделала, на чём застряла, что узнала. Через 3 месяца это будет твой набор баек для собеседований.
 4. **Если застряла >30 минут — пиши в чат.** Не залипай. Лучше быстро разблокировать и идти дальше.
-5. **Не рефакторь раньше времени.** Сначала работает — потом красиво. На неделе 2 нормально иметь `List<Product>` в памяти, на неделе 3 заменишь на EF.
-6. **Помни про "почему", а не только "как".** На каждом значимом решении (зачем DTO, зачем async, зачем интерфейс сервиса) — формулируй ответ в одно предложение. Это и есть подготовка к собеседованию параллельно с кодом.
+5. **Не рефакторь раньше времени.** Сначала работает — потом красиво.
+6. **Помни про "почему", а не только "как".** На каждом значимом решении — формулируй ответ в одно предложение. Это и есть подготовка к собеседованию параллельно с кодом.
 
 ---
 
-*Последнее обновление: 22 мая 2026*
+*Последнее обновление: 8 июля 2026*
