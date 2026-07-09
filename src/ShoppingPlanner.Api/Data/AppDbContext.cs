@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShoppingPlanner.Api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ShoppingPlanner.Api.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -16,6 +17,9 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+        base.OnModelCreating(modelBuilder);  
+
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Dairy" },
             new Category { Id = 2, Name = "Bakery" },
