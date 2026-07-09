@@ -2,9 +2,11 @@
 using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ShoppingPlanner.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ShoppingListsController : ControllerBase
