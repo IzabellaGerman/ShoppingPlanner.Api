@@ -19,13 +19,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        run: dotnet restore src/ShoppingPlanner.Api/ShoppingPlanner.Api.csproj
+        run: dotnet restore
 
       - name: Build
         run: dotnet build src/ShoppingPlanner.Api/ShoppingPlanner.Api.csproj --no-restore -c Release
 
       - name: Test
-        run: dotnet test --no-restore -c Release
+        run: dotnet test -c Release
 
       - name: Docker build
         run: docker build -t shopping-planner-api .
