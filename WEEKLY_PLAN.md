@@ -71,55 +71,55 @@ Operational-документ по pet-проекту. Используется �
 
 ## Месяц 2 — Auth + Infrastructure (portfolio-ready)
 
-### Неделя 5 — JWT аутентификация
+### ✅ Неделя 5 — JWT аутентификация (СДЕЛАНО)
 
 **Цель:** пользователи могут регистрироваться, логиниться и получать JWT-токен. Защищённые эндпоинты доступны только с токеном.
 
 **Учёба (3–4 ч):**
-- [ ] Nick Chapsas — "ASP.NET Core JWT Authentication" на YouTube (~1.5 часа)
-- [ ] Microsoft Docs — "Overview of ASP.NET Core authentication" (~30 мин)
-- [ ] Прочитать про разницу `Authentication` vs `Authorization` — на собесе спрашивают всегда
+- [x] Nick Chapsas — "ASP.NET Core JWT Authentication" на YouTube (~1.5 часа)
+- [x] Microsoft Docs — "Overview of ASP.NET Core authentication" (~30 мин)
+- [x] Прочитать про разницу `Authentication` vs `Authorization` — на собесе спрашивают всегда
 
 **Код (8–10 ч):**
 
 День 1 — User модель и Identity:
-- [ ] Добавить пакет `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
-- [ ] Создать `ApplicationUser : IdentityUser` в `Models/`
-- [ ] Изменить `AppDbContext : IdentityDbContext<ApplicationUser>`
-- [ ] Миграция `AddIdentity`. Применить.
-- [ ] **Почему Identity, а не вручную:** готовая реализация хэширования паролей, управления пользователями, claims. На собесе: "не изобретаем колесо".
+- [x] Добавить пакет `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
+- [x] Создать `ApplicationUser : IdentityUser` в `Models/`
+- [x] Изменить `AppDbContext : IdentityDbContext<ApplicationUser>`
+- [x] Миграция `AddIdentity`. Применить.
+- [x] **Почему Identity, а не вручную:** готовая реализация хэширования паролей, управления пользователями, claims. На собесе: "не изобретаем колесо".
 
 День 2 — JWT настройка:
-- [ ] Добавить пакет `Microsoft.AspNetCore.Authentication.JwtBearer`
-- [ ] В `appsettings.json` добавить секцию `Jwt`: `Key`, `Issuer`, `Audience`, `ExpiresInMinutes`
-- [ ] В `Program.cs` настроить `AddAuthentication` + `AddJwtBearer`
-- [ ] `app.UseAuthentication()` — до `app.UseAuthorization()` (порядок важен!)
-- [ ] **На собесе:** объяснить разницу между `UseAuthentication` и `UseAuthorization`
+- [x] Добавить пакет `Microsoft.AspNetCore.Authentication.JwtBearer`
+- [x] В `appsettings.json` добавить секцию `Jwt`: `Key`, `Issuer`, `Audience`, `ExpiresInMinutes`
+- [x] В `Program.cs` настроить `AddAuthentication` + `AddJwtBearer`
+- [x] `app.UseAuthentication()` — до `app.UseAuthorization()` (порядок важен!)
+- [x] **На собесе:** объяснить разницу между `UseAuthentication` и `UseAuthorization`
 
 День 3 — Register / Login эндпоинты:
-- [ ] Создать `AuthController` с двумя эндпоинтами: `POST /api/auth/register` и `POST /api/auth/login`
-- [ ] DTOs: `RegisterDto` (Email, Password), `LoginDto` (Email, Password), `AuthResponseDto` (Token, ExpiresAt)
-- [ ] `Register`: создать юзера через `UserManager<ApplicationUser>.CreateAsync`
-- [ ] `Login`: проверить пароль через `UserManager.CheckPasswordAsync`, сгенерировать токен
-- [ ] Метод `GenerateJwtToken(ApplicationUser user)` — приватный, в контроллере или отдельном сервисе
+- [x] Создать `AuthController` с двумя эндпоинтами: `POST /api/auth/register` и `POST /api/auth/login`
+- [x] DTOs: `RegisterDto` (Email, Password), `LoginDto` (Email, Password), `AuthResponseDto` (Token, ExpiresAt)
+- [x] `Register`: создать юзера через `UserManager<ApplicationUser>.CreateAsync`
+- [x] `Login`: проверить пароль через `UserManager.CheckPasswordAsync`, сгенерировать токен
+- [x] Метод `GenerateJwtToken(ApplicationUser user)` — приватный, в контроллере или отдельном сервисе
 
 День 4 — Защита эндпоинтов:
-- [ ] Добавить `[Authorize]` на `ShoppingListsController`
-- [ ] Добавить `UserId` поле в `ShoppingList` модель — миграция `AddUserIdToShoppingList`
-- [ ] В `ShoppingListService` фильтровать списки по `UserId` из claims токена
-- [ ] Вспомогательный метод: получить `userId` из `HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)`
-- [ ] **На собесе:** объяснить claims — это данные внутри JWT-токена, не требуют обращения к БД при каждом запросе
+- [x] Добавить `[Authorize]` на `ShoppingListsController`
+- [ ] Добавить `UserId` поле в `ShoppingList` (отложено на позже) модель — миграция `AddUserIdToShoppingList`
+- [ ] В `ShoppingListService` фильтровать (отложено на позже) списки по `UserId` из claims токена
+- [ ] Вспомогательный метод: получить `userId` (отложено на позже) из `HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)`
+- [x] **На собесе:** объяснить claims — это данные внутри JWT-токена, не требуют обращения к БД при каждом запросе
 
 День 5 — Тесты для Auth:
-- [ ] Unit-тест: `GenerateJwtToken` возвращает токен с правильными claims
-- [ ] Обновить существующие `ShoppingListService` тесты — добавить `UserId` в seed-данные
-- [ ] **Не тестировать Identity напрямую** — это внешняя библиотека, тестируем свою логику вокруг неё
+- [ ] Unit-тест: `GenerateJwtToken` (отложено) возвращает токен с правильными claims
+- [ ] Обновить существующие `ShoppingListService` тесты (отложено) — добавить `UserId` в seed-данные
+- [x] **Не тестировать Identity напрямую** — это внешняя библиотека, тестируем свою логику вокруг неё
 
 День 6–7 — Полировка и PR:
-- [ ] Проверить в Swagger: Register → Login → скопировать токен → Authorize → защищённые эндпоинты работают
-- [ ] Swagger настроить для JWT: `AddSecurityDefinition` + `AddSecurityRequirement` в `Program.cs`
-- [ ] Добавить в `INTERVIEW_NOTES.md`: JWT структура (header.payload.signature), stateless auth, claims
-- [ ] PR `feature/jwt-auth` → main
+- [x] Проверить в Swagger: Register → Login → скопировать токен → Authorize → защищённые эндпоинты работают
+- [x] Swagger настроить для JWT: `AddSecurityDefinition` + `AddSecurityRequirement` в `Program.cs`
+- [ ] Добавить в `INTERVIEW_NOTES.md`: JWT структура (предстоит) (header.payload.signature), stateless auth, claims
+- [x] PR `feature/jwt-auth` → main
 
 **Definition of Done:**
 - `POST /api/auth/register` создаёт пользователя
@@ -265,4 +265,4 @@ Operational-документ по pet-проекту. Используется �
 
 ---
 
-*Последнее обновление: 8 июля 2026*
+*Последнее обновление: 9 июля 2026*
