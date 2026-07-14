@@ -131,7 +131,7 @@ Operational-документ по pet-проекту. Используется �
 
 ---
 
-### Неделя 6 — Docker + GitHub Actions CI
+### Неделя 6 — Docker + GitHub Actions CI (СДЕЛАНО)
 
 **Цель:** весь стек запускается одной командой через Docker Compose. GitHub Actions запускает build и тесты на каждый PR.
 
@@ -142,39 +142,39 @@ Operational-документ по pet-проекту. Используется �
 **Код (6–8 ч):**
 
 День 1–2 — Dockerfile:
-- [ ] Создать `Dockerfile` в корне репо (multi-stage build):
+- [x] Создать `Dockerfile` в корне репо (multi-stage build):
   - Stage 1 `build`: `mcr.microsoft.com/dotnet/sdk:8.0` — restore, build, publish
   - Stage 2 `runtime`: `mcr.microsoft.com/dotnet/aspnet:8.0` — копируем publish output
-- [ ] Проверить: `docker build -t shoppingplanner-api .` собирается без ошибок
-- [ ] `docker run -p 8080:8080 shoppingplanner-api` — API отвечает
-- [ ] **На собесе:** объяснить multi-stage build — зачем два слоя (SDK тяжелее runtime, в production не нужен компилятор)
+- [x] Проверить: `docker build -t shoppingplanner-api .` собирается без ошибок
+- [x] `docker run -p 8080:8080 shoppingplanner-api` — API отвечает
+- [x] **На собесе:** объяснить multi-stage build — зачем два слоя (SDK тяжелее runtime, в production не нужен компилятор)
 
 День 3 — Docker Compose:
-- [ ] Создать `docker-compose.yml` в корне:
+- [x] Создать `docker-compose.yml` в корне:
   - сервис `api` — из нашего Dockerfile, порт 8080
   - сервис `db` — `postgres:16`, volume для данных, env-переменные
   - зависимость: `api` depends_on `db`
-- [ ] Connection string в `docker-compose.yml` через env-переменную `ConnectionStrings__DefaultConnection`
-- [ ] `docker compose up` — оба сервиса стартуют, API подключается к БД
-- [ ] **На собесе:** volumes — почему важны (данные не пропадают при перезапуске контейнера)
+- [x] Connection string в `docker-compose.yml` через env-переменную `ConnectionStrings__DefaultConnection`
+- [x] `docker compose up` — оба сервиса стартуют, API подключается к БД
+- [x] **На собесе:** volumes — почему важны (данные не пропадают при перезапуске контейнера)
 
 День 4 — Environment и secrets:
-- [ ] `.env` файл для локальных секретов (JWT Key, DB password) — добавить в `.gitignore`
-- [ ] Убедиться, что в `appsettings.json` нет реальных паролей
-- [ ] README: обновить "Getting started" — теперь есть два способа запуска (локально и через Docker)
+- [x] `.env` файл для локальных секретов (JWT Key, DB password) — добавить в `.gitignore`
+- [x] Убедиться, что в `appsettings.json` нет реальных паролей
+- [x] README: обновить "Getting started" — теперь есть два способа запуска (локально и через Docker)
 
 День 5–6 — GitHub Actions:
-- [ ] Создать `.github/workflows/ci.yml`
-- [ ] Триггер: `push` и `pull_request` на `main`
-- [ ] Jobs:
+- [x] Создать `.github/workflows/ci.yml`
+- [x] Триггер: `push` и `pull_request` на `main`
+- [x] Jobs:
   - `build`: `dotnet restore` → `dotnet build --no-restore`
   - `test`: `dotnet test --no-build`
-- [ ] Проверить: открыть PR → GitHub Actions запускается → зелёная галочка
-- [ ] Добавить badge в README: `![CI](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml/badge.svg)`
+- [x] Проверить: открыть PR → GitHub Actions запускается → зелёная галочка
+- [x] Добавить badge в README: `![CI](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml/badge.svg)`
 
 День 7 — PR и полировка:
-- [ ] PR `feature/docker-ci` → main
-- [ ] Добавить в `INTERVIEW_NOTES.md`: зачем Docker (воспроизводимость среды), зачем CI (не ломаем main)
+- [x] PR `feature/docker-ci` → main
+- [x] Добавить в `INTERVIEW_NOTES.md`: зачем Docker (воспроизводимость среды), зачем CI (не ломаем main)
 
 **Definition of Done:**
 - `docker compose up` поднимает API + PostgreSQL, Swagger открывается на `localhost:8080/swagger`
@@ -265,4 +265,4 @@ Operational-документ по pet-проекту. Используется �
 
 ---
 
-*Последнее обновление: 9 июля 2026*
+*Последнее обновление: 14 июля 2026*

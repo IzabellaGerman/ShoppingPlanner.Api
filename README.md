@@ -1,11 +1,12 @@
 # ShoppingPlanner.Api
 
 > REST API for shopping list management. Built with ASP.NET Core 8.
-> **Status: work in progress — Week 4 of an 8-week build.** See the [Roadmap](#roadmap) for what is done and what is planned.
+> **Status: work in progress — Week 6 of an 8-week build.** See the [Roadmap](#roadmap) for what is done and what is planned.
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Status](https://img.shields.io/badge/status-work_in_progress-orange)
+![CI](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml/badge.svg)
 
 A backend service that will let users manage shopping lists shared across devices. The end goal: authenticated users create lists, add products with categories and quantities, mark items as purchased, and retrieve their history.
 
@@ -13,42 +14,18 @@ I'm building it incrementally and in public — each week adds one production-gr
 
 ---
 
-## What works today (Week 4)
+## What works today (Week 6)
 
-A fully functional REST API with three domain entities persisted to PostgreSQL, global error handling, structured logging, and 16 unit tests.
+A production-grade REST API with authentication, PostgreSQL persistence, and full containerization.
 
-### Products
-- `GET /api/products` — list all with category included
-- `GET /api/products/{id}` — `200` if found, `404` if not
-- `POST /api/products` — `201 Created` + `Location` header
-- `PUT /api/products/{id}` — `200` if found, `404` if not
-- `DELETE /api/products/{id}` — `204 No Content`, `404` if not found
-
-### Categories
-- `GET /api/categories` — list all
-- `GET /api/categories/{id}` — `200` if found, `404` if not
-- `POST /api/categories` — `201 Created` + `Location` header
-- `PUT /api/categories/{id}` — `200` if found, `404` if not
-- `DELETE /api/categories/{id}` — `204 No Content`, `404` if not found
-
-### Shopping Lists
-- `GET /api/shopping-lists` — list all (with items and products)
-- `GET /api/shopping-lists/{id}` — full list with items
-- `POST /api/shopping-lists` — create list with items in request body
-- `PUT /api/shopping-lists/{id}` — rename list
-- `DELETE /api/shopping-lists/{id}` — delete list and all its items (cascade)
-- `POST /api/shopping-lists/{id}/items` — add product to list
-- `PATCH /api/shopping-lists/{id}/items/{itemId}` — mark as purchased / update quantity
-- `DELETE /api/shopping-lists/{id}/items/{itemId}` — remove item from list
-
-### Infrastructure
-- **PostgreSQL persistence** — EF Core 8 with migrations, full async throughout
-- **DTO / domain separation** — separate DTOs per operation per entity
-- **Validation** — DataAnnotations on DTOs, automatic `400 ProblemDetails` via `[ApiController]`
-- **Global exception handler** — `IExceptionHandler` (.NET 8), returns RFC 7807 `ProblemDetails` for unhandled exceptions; stack traces never leak to clients
-- **Structured logging** — `ILogger<T>` throughout the service layer
-- **Swagger / OpenAPI** — all endpoints annotated with `[ProducesResponseType]`
-- **Tests** — 16 xUnit unit tests (AAA style), EF Core InMemory provider for service tests, Moq for controller tests
+- **JWT authentication** — `POST /api/auth/register` and `POST /api/auth/login`; protected endpoints require Bearer token
+- **Three domain entities** — `Product`, `Category`, `ShoppingList` / `ShoppingListItem` with navigation properties
+- **EF Core + PostgreSQL** — async everywhere, Fluent API configuration, migrations applied automatically on startup
+- **Global exception handling** — `IExceptionHandler` (.NET 8), all errors return RFC 7807 `ProblemDetails`
+- **Docker** — `docker compose up` starts API + PostgreSQL; multi-stage Dockerfile keeps image at ~335MB
+- **GitHub Actions CI** — build → test → docker build on every push and PR
+- **Swagger / OpenAPI** — JWT Bearer configured, all endpoints documented with `[ProducesResponseType]`
+- **16 xUnit tests** — EF Core InMemory provider, `NullLogger<T>.Instance`, AAA style
 
 ---
 
@@ -74,9 +51,9 @@ Legend: **[x]** in use today · **[ ]** planned (see Roadmap).
 | ORM | Entity Framework Core 8 | [x] |
 | Database | PostgreSQL 16 | [x] |
 | Logging | `ILogger<T>` (built-in) | [x] |
-| Authentication | JWT Bearer + ASP.NET Core Identity | [ ] Week 5 |
-| Containerization | Docker, docker-compose | [ ] Week 6 |
-| CI/CD | GitHub Actions | [ ] Week 6 |
+| Authentication | JWT Bearer + ASP.NET Core Identity | [x] |
+| Containerization | Docker, docker-compose | [x] |
+| CI/CD | GitHub Actions | [x] |
 | Hosting | TBD (Railway / Render / Fly.io) | [ ] Week 7 |
 
 ---
@@ -114,10 +91,29 @@ Layering:
 
 ## Getting started
 
-### Prerequisites
+
+### Option A — Docker (recommended)
+
+No .NET SDK or PostgreSQL needed.
+
+```bash
+git clone https://github.com/IzabellaGerman/ShoppingPlanner.Api.git
+cd ShoppingPlanner.Api
+docker compose up
+```
+
+Then open `http://localhost:8080/swagger`.
+
+### Option B — Local
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- PostgreSQL 16 (local install or Docker)
+- PostgreSQL 16 running on port 5432
+
+```bash
+git clone https://github.com/IzabellaGerman/ShoppingPlanner.Api.git
+cd ShoppingPlanner.Api
+dotnet run --project src/ShoppingPlanner.Api
+```
 
 ### Configure the database
 
@@ -137,15 +133,6 @@ Set the connection string in `src/ShoppingPlanner.Api/appsettings.Development.js
 dotnet tool run dotnet-ef database update --project src/ShoppingPlanner.Api
 ```
 
-### Run it
-
-```bash
-git clone https://github.com/IzabellaGerman/ShoppingPlanner.Api.git
-cd ShoppingPlanner.Api
-dotnet run --project src/ShoppingPlanner.Api
-```
-
-Then open Swagger UI at the URL printed in the console (e.g. `http://localhost:5271/swagger`).
 
 ### Run the tests
 
@@ -227,8 +214,8 @@ ShoppingPlanner.Api/
 - [x] **Week 2** — in-memory `Product` CRUD, DTOs, validation + `ProblemDetails`, Swagger, xUnit tests
 - [x] **Week 3** — PostgreSQL + EF Core migrations, `Category` entity, navigation properties, async everywhere
 - [x] **Week 4** — `ShoppingList` / `ShoppingListItem` domain, global exception handling (`IExceptionHandler`), structured logging, 16 unit tests
-- [ ] **Week 5** — JWT authentication + ASP.NET Core Identity, ownership checks
-- [ ] **Week 6** — Docker Compose, GitHub Actions CI (build -> test -> Docker image)
+- [x] **Week 5** — JWT authentication + ASP.NET Core Identity, ownership checks
+- [x] **Week 6** — Docker Compose, GitHub Actions CI (build -> test -> Docker image)
 - [ ] **Week 7** — deployment to a free host, live Swagger link in this README
 - [ ] **Future** — pagination, list sharing, AI-suggested categories, mobile client
 
