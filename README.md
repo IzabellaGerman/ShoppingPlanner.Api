@@ -7,6 +7,8 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Status](https://img.shields.io/badge/status-work_in_progress-orange)
 ![CI](https://github.com/IzabellaGerman/ShoppingPlanner.Api/actions/workflows/ci.yml/badge.svg)
+[![Swagger UI](https://img.shields.io/badge/Swagger-live-brightgreen)](https://shoppingplannerapi-production.up.railway.app/swagger)
+
 
 A backend service that will let users manage shopping lists shared across devices. The end goal: authenticated users create lists, add products with categories and quantities, mark items as purchased, and retrieve their history.
 
@@ -15,6 +17,8 @@ I'm building it incrementally and in public — each week adds one production-gr
 ---
 
 ## What works today (Week 6)
+
+🔗 **Live API:** [Swagger UI](https://shoppingplannerapi-production.up.railway.app/swagger)
 
 A production-grade REST API with authentication, PostgreSQL persistence, and full containerization.
 
@@ -91,6 +95,7 @@ Layering:
 
 ## Getting started
 
+> **Live demo:** [https://shoppingplannerapi-production.up.railway.app/swagger](https://shoppingplannerapi-production.up.railway.app/swagger)
 
 ### Option A — Docker (recommended)
 
