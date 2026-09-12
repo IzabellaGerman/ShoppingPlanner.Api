@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shopping-planner": {
+      "command": "dotnet",
+      "args": ["src/ShoppingPlanner.Mcp/bin/Debug/net8.0/ShoppingPlanner.Mcp.dll"]
+    }
+  }
+}
