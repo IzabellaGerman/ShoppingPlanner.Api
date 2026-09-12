@@ -48,6 +48,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -98,7 +99,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

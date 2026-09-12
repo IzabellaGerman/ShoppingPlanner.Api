@@ -188,20 +188,20 @@ Operational-документ по pet-проекту. Используется �
 **Цель:** живая ссылка в README. Рекрутер может открыть Swagger и потыкать API.
 
 **Учёба (1 ч):**
-- [ ] Документация выбранного хостинга (Railway / Render / Fly.io) — Getting Started
+- [x] Документация выбранного хостинга (Railway / Render / Fly.io) — Getting Started
 
 **Код (5–6 ч):**
 
 День 1–2 — Выбор хостинга и деплой:
-- [ ] Railway (рекомендуется — простой, есть бесплатный tier, поддерживает Docker)
-- [ ] Подключить GitHub репо → Railway автоматически деплоит из `main`
-- [ ] Настроить env-переменные в Railway UI: Connection String, JWT Key
-- [ ] PostgreSQL как Railway сервис (или внешний — Neon.tech бесплатный PostgreSQL)
-- [ ] Применить миграции на prod БД
+- [x] Railway (рекомендуется — простой, есть бесплатный tier, поддерживает Docker)
+- [x] Подключить GitHub репо → Railway автоматически деплоит из `main`
+- [x] Настроить env-переменные в Railway UI: Connection String, JWT Key
+- [x] PostgreSQL как Railway сервис (или внешний — Neon.tech бесплатный PostgreSQL)
+- [x] Применить миграции на prod БД
 
 День 3 — Production настройки:
-- [ ] `appsettings.Production.json` — убрать Development-специфичные настройки
-- [ ] Health check эндпоинт: `GET /health` → `200 OK` (для мониторинга хостинга)
+- [x] `appsettings.Production.json` — убрать Development-специфичные настройки
+- [x] Health check эндпоинт: `GET /health` → `200 OK` (для мониторинга хостинга)
   ```csharp
   app.MapHealthChecks("/health");
   builder.Services.AddHealthChecks();
