@@ -14,10 +14,20 @@ public class ProductService : IProductService
         _db = db;
         }
 
-    public async Task<IEnumerable<ProductDto>> GetAllAsync()
+    public async Task<IEnumerable<ProductDto>> GetAllAsync(string? search = null)
         {
-        return await _db.Products
-            .Include(p => p.Category)
+        IQueryable<Product> query = _db.Products
+            .AsNoTracking()
+            .Include(p => p.Category);
+
+        if (!string.IsNullOrWhiteSpace(search))
+            {
+            var pattern = $"%{search.Trim()}%";
+            query = query.Where(p => EF.Functions.ILike(p.Name, pattern));
+            }
+
+        return await query
+            .OrderBy(p => p.Name)
             .Select(p => MapToDto(p))
             .ToListAsync();
         }

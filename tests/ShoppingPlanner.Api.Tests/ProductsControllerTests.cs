@@ -28,7 +28,7 @@ public class ProductsControllerTests
         new ProductDto { Id = 1, Name = "Milk", DefaultUnit = "l" },
         new ProductDto { Id = 2, Name = "Bread", DefaultUnit = "pcs" }
     };
-        _mockService.Setup(s => s.GetAllAsync()).ReturnsAsync(products);
+        _mockService.Setup(s => s.GetAllAsync(It.IsAny<string?>())).ReturnsAsync(products);
 
         // Act
         var result = await _controller.GetAll();
