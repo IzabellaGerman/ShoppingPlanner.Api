@@ -126,4 +126,46 @@ public sealed class ShoppingPlannerClient
             ? "No shopping lists found."
             : string.Join("\n", lists.Select(l => $"#{l.Id} {l.Name}"));
         }
+
+    public async Task<string> AddItemAsync(
+    int listId, int productId, decimal quantity, string? note, CancellationToken ct)
+        {
+        if (quantity <= 0)
+            return "Quantity must be greater than 0.";
+
+        HttpResponseMessage response;
+        try
+            {
+            response = await SendAuthorizedAsync(() =>
+                new HttpRequestMessage(HttpMethod.Post, $"api/shoppinglists/{listId}/items")
+                    {
+                    Content = JsonContent.Create(new
+                        {
+                        productId,
+                        quantity,
+                        note = string.IsNullOrWhiteSpace(note) ? null : note
+                        })
+                    }, ct);
+            }
+        catch (HttpRequestException ex)
+            {
+            return $"The ShoppingPlanner API is not reachable at {_http.BaseAddress}: {ex.Message}";
+            }
+        catch (InvalidOperationException ex)
+            {
+            return $"Authentication against the API failed: {ex.Message}";
+            }
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return $"Could not add the item: list {listId} or product {productId} does not exist. "
+                 + "Call get_lists and search_product to verify both ids.";
+
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+            return $"The API rejected the item: {await response.Content.ReadAsStringAsync(ct)}";
+
+        if (!response.IsSuccessStatusCode)
+            return $"The API returned {(int)response.StatusCode} when adding the item.";
+
+        return $"Added {quantity} of product #{productId} to list #{listId}.";
+        }
     }

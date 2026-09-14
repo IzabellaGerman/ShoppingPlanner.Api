@@ -48,16 +48,17 @@ public class ShoppingListTools
     "Returns the shopping lists of the current user with their numeric ids, which add_item requires.")]
     public Task<string> GetListsAsync(CancellationToken ct)
     => _client.GetListsAsync(ct);
+
+    [McpServerTool(Name = "add_item"), Description(
+    "Adds a product to a shopping list. Requires a numeric productId — "
+    + "call search_product first to obtain it. Never guess a productId.")]
+    public Task<string> AddItemAsync(
+    [Description("Id of the shopping list, as returned by get_lists.")] int listId,
+    [Description("Id of the product, as returned by search_product.")] int productId,
+    [Description("How much to add, for example 2 or 0.5. Defaults to 1 if not specified.")] decimal quantity = 1,
+    [Description("Optional free-text note, for example 'low fat'.")] string? note = null,
+    CancellationToken ct = default)
+    => _client.AddItemAsync(listId, productId, quantity, note, ct);
     }
 
 
-[McpServerToolType]
-public static class ItemTools
-    {
-    [McpServerTool(Name = "add_item"), Description("Adds a product to a shopping list. Use ids returned by search_product and get_lists")]
-    public static string AddItem(
-        [Description("Id of the shopping list, from get_lists")] int listId,
-        [Description("Id of the product, from search_product")] int productId,
-        [Description("How many units to add")] int quantity) 
-        => $"Added {quantity}× product {productId} to list {listId}";
-    }
