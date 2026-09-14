@@ -5,7 +5,7 @@ public sealed class TokenStore
     private readonly SemaphoreSlim _gate = new(1, 1);
     private string? _token;
     private DateTime _expiresAtUtc;
-
+   
     public async Task<string> GetOrCreateAsync(
         Func<CancellationToken, Task<(string Token, DateTime ExpiresAtUtc)>> login,
         CancellationToken ct)
