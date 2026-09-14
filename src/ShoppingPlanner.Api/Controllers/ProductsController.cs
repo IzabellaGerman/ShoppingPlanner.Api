@@ -19,9 +19,9 @@ public class ProductsController : ControllerBase
 
     // GET api/products
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll([FromQuery] string? search = null)
         {
-        var products = await _productService.GetAllAsync();
+        var products = await _productService.GetAllAsync(search);
         return Ok(products);
         }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
+using ShoppingPlanner.Mcp;
 using System.ComponentModel;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -10,6 +11,18 @@ builder.Logging.AddConsole(consoleLogOptions =>
     // all logs — в stderr
     consoleLogOptions.LogToStandardErrorThreshold = LogLevel.Trace;
 });
+
+builder.Services.AddSingleton<TokenStore>();
+
+builder.Services.AddHttpClient<ShoppingPlannerClient>(client =>
+{
+    var baseUrl = builder.Configuration["ShoppingPlanner:BaseUrl"]
+        ?? throw new InvalidOperationException("ShoppingPlanner:BaseUrl is not configured");
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
@@ -17,29 +30,35 @@ builder.Services
 await builder.Build().RunAsync();
 
 [McpServerToolType]
-public static class ShoppingListTools
+public class ShoppingListTools
     {
-    [McpServerTool(Name = "get_lists"), Description("Returns all shopping lists of the current user with their id and name.")]
-    public static string GetLists()
-        => "1: Weekend shopping (3 items)\n2: Drogerie (5 items)";
+    private readonly ShoppingPlannerClient _client;
+
+    public ShoppingListTools(ShoppingPlannerClient client) => _client = client;
+
+    [McpServerTool(Name = "search_product"), Description(
+        "Searches the product catalogue by part of the product name. " +
+        "Returns matching products with their numeric ids, which add_item requires.")]
+    public Task<string> SearchProductAsync(
+        [Description("Part of the product name, for example 'mleko'.")] string query,
+        CancellationToken ct)
+        => _client.SearchProductsAsync(query, ct);
+
+    [McpServerTool(Name = "get_lists"), Description(
+    "Returns the shopping lists of the current user with their numeric ids, which add_item requires.")]
+    public Task<string> GetListsAsync(CancellationToken ct)
+    => _client.GetListsAsync(ct);
+
+    [McpServerTool(Name = "add_item"), Description(
+    "Adds a product to a shopping list. Requires a numeric productId — "
+    + "call search_product first to obtain it. Never guess a productId.")]
+    public Task<string> AddItemAsync(
+    [Description("Id of the shopping list, as returned by get_lists.")] int listId,
+    [Description("Id of the product, as returned by search_product.")] int productId,
+    [Description("How much to add, for example 2 or 0.5. Defaults to 1 if not specified.")] decimal quantity = 1,
+    [Description("Optional free-text note, for example 'low fat'.")] string? note = null,
+    CancellationToken ct = default)
+    => _client.AddItemAsync(listId, productId, quantity, note, ct);
     }
 
-[McpServerToolType]
-public class ProductTools
-    {
-    [McpServerTool(Name = "search_product"), Description("Searches products by name, returns matching products with their ids.")]
-    public string SearchProduct(
-        [Description("Part of the product name to search for, e.g. 'milk'")] string query)
-        => $"Results for '{query}':\n12: Milk 1l\n34: Milk semi-skimmed 1.5l";
-    }
 
-[McpServerToolType]
-public static class ItemTools
-    {
-    [McpServerTool(Name = "add_item"), Description("Adds a product to a shopping list. Use ids returned by search_product and get_lists")]
-    public static string AddItem(
-        [Description("Id of the shopping list, from get_lists")] int listId,
-        [Description("Id of the product, from search_product")] int productId,
-        [Description("How many units to add")] int quantity) 
-        => $"Added {quantity}× product {productId} to list {listId}";
-    }
