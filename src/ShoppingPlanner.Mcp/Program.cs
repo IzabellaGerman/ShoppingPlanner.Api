@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
+using ShoppingPlanner.Mcp;
 using System.ComponentModel;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -10,6 +11,18 @@ builder.Logging.AddConsole(consoleLogOptions =>
     // all logs — в stderr
     consoleLogOptions.LogToStandardErrorThreshold = LogLevel.Trace;
 });
+
+builder.Services.AddSingleton<TokenStore>();
+
+builder.Services.AddHttpClient<ShoppingPlannerClient>(client =>
+{
+    var baseUrl = builder.Configuration["ShoppingPlanner:BaseUrl"]
+        ?? throw new InvalidOperationException("ShoppingPlanner:BaseUrl is not configured");
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
