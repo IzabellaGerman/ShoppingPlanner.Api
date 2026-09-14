@@ -7,6 +7,8 @@ namespace ShoppingPlanner.Mcp;
 
 public sealed record AuthResponse(string Token, DateTime ExpiresAt);
 
+public sealed record ProductDto(int Id, string Name, string? CategoryName, string? DefaultUnit);
+
 public sealed class ShoppingPlannerClient
     {
     private readonly HttpClient _http;
@@ -59,5 +61,36 @@ public sealed class ShoppingPlannerClient
         {
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return _http.SendAsync(request, ct);
+        }
+    public async Task<string> SearchProductsAsync(string query, CancellationToken ct)
+        {
+        HttpResponseMessage response;
+        try
+            {
+            response = await _http.GetAsync($"api/products?search={Uri.EscapeDataString(query)}", ct);
+            }
+        catch (HttpRequestException ex)
+            {
+            return $"The ShoppingPlanner API is not reachable at {_http.BaseAddress}: {ex.Message}";
+            }
+
+        if (!response.IsSuccessStatusCode)
+            return $"The API returned {(int)response.StatusCode} for a product search.";
+
+        var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>(cancellationToken: ct)
+            ?? new List<ProductDto>();
+
+        if (products.Count == 0)
+            return $"No products match '{query}'.";
+
+        const int limit = 10;
+        var lines = products.Take(limit).Select(p =>
+            $"#{p.Id} {p.Name}{(p.DefaultUnit is null ? "" : $" — {p.DefaultUnit}")}");
+
+        var text = string.Join("\n", lines);
+
+        return products.Count > limit
+            ? $"{text}\nShowing {limit} of {products.Count} matches — refine the query."
+            : text;
         }
     }

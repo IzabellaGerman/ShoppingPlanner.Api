@@ -30,11 +30,21 @@ builder.Services
 await builder.Build().RunAsync();
 
 [McpServerToolType]
-public static class ShoppingListTools
+public class ShoppingListTools
     {
-    [McpServerTool(Name = "get_lists"), Description("Returns all shopping lists of the current user with their id and name.")]
-    public static string GetLists()
-        => "1: Weekend shopping (3 items)\n2: Drogerie (5 items)";
+    private readonly ShoppingPlannerClient _client;
+
+    public ShoppingListTools(ShoppingPlannerClient client) => _client = client;
+
+    [McpServerTool(Name = "search_product"), Description(
+        "Searches the product catalogue by part of the product name. " +
+        "Returns matching products with their numeric ids, which add_item requires.")]
+    public Task<string> SearchProductAsync(
+        [Description("Part of the product name, for example 'mleko'.")] string query,
+        CancellationToken ct)
+        => _client.SearchProductsAsync(query, ct);
+
+    // get_lists и add_item пока оставь как есть, только убери у них static
     }
 
 [McpServerToolType]

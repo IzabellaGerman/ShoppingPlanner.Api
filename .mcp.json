@@ -2,7 +2,11 @@
   "mcpServers": {
     "shopping-planner": {
       "command": "dotnet",
-      "args": ["src/ShoppingPlanner.Mcp/bin/Debug/net8.0/ShoppingPlanner.Mcp.dll"]
+      "args": ["run", "--project", "C:\\!files\\_C#\\Claude\\ShopperPlanner.API\\ShoppingPlanner.Api\\src\\ShoppingPlanner.Mcp"],
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ShoppingPlanner__BaseUrl": "http://localhost:5271"
+      }
     }
   }
 }
