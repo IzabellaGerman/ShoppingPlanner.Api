@@ -44,17 +44,12 @@ public class ShoppingListTools
         CancellationToken ct)
         => _client.SearchProductsAsync(query, ct);
 
-    // get_lists и add_item пока оставь как есть, только убери у них static
+    [McpServerTool(Name = "get_lists"), Description(
+    "Returns the shopping lists of the current user with their numeric ids, which add_item requires.")]
+    public Task<string> GetListsAsync(CancellationToken ct)
+    => _client.GetListsAsync(ct);
     }
 
-[McpServerToolType]
-public class ProductTools
-    {
-    [McpServerTool(Name = "search_product"), Description("Searches products by name, returns matching products with their ids.")]
-    public string SearchProduct(
-        [Description("Part of the product name to search for, e.g. 'milk'")] string query)
-        => $"Results for '{query}':\n12: Milk 1l\n34: Milk semi-skimmed 1.5l";
-    }
 
 [McpServerToolType]
 public static class ItemTools

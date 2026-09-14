@@ -7,6 +7,8 @@ namespace ShoppingPlanner.Mcp;
 
 public sealed record AuthResponse(string Token, DateTime ExpiresAt);
 
+public sealed record ShoppingListDto(int Id, string Name);
+
 public sealed record ProductDto(int Id, string Name, string? CategoryName, string? DefaultUnit);
 
 public sealed class ShoppingPlannerClient
@@ -92,5 +94,36 @@ public sealed class ShoppingPlannerClient
         return products.Count > limit
             ? $"{text}\nShowing {limit} of {products.Count} matches — refine the query."
             : text;
+        }
+
+    public async Task<string> GetListsAsync(CancellationToken ct)
+        {
+        HttpResponseMessage response;
+        try
+            {
+            response = await SendAuthorizedAsync(
+                () => new HttpRequestMessage(HttpMethod.Get, "api/shoppinglists"), ct);
+            }
+        catch (HttpRequestException ex)
+            {
+            return $"The ShoppingPlanner API is not reachable at {_http.BaseAddress}: {ex.Message}";
+            }
+        catch (InvalidOperationException ex)
+            {
+            return $"Authentication against the API failed: {ex.Message}";
+            }
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+            return "Authentication failed — check the credentials in user-secrets.";
+
+        if (!response.IsSuccessStatusCode)
+            return $"The API returned {(int)response.StatusCode} when listing shopping lists.";
+
+        var lists = await response.Content.ReadFromJsonAsync<List<ShoppingListDto>>(cancellationToken: ct)
+            ?? new List<ShoppingListDto>();
+
+        return lists.Count == 0
+            ? "No shopping lists found."
+            : string.Join("\n", lists.Select(l => $"#{l.Id} {l.Name}"));
         }
     }
