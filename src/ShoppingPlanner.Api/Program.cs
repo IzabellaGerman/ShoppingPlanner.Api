@@ -60,7 +60,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // JWT
-var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+    {
+    throw new InvalidOperationException(
+        "Jwt:Key is missing or shorter than 32 characters. " +
+        "Set it via the Jwt__Key environment variable or `dotnet user-secrets`.");
+    }
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

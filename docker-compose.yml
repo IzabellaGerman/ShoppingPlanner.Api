@@ -15,5 +15,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=shoppingplanner;Username=postgres;Password=devpassword
+      # Local-only default. Override with JWT_KEY in your shell or a .env file.
+      - Jwt__Key=${JWT_KEY:-local-compose-only-key-change-me-0123456789}
     depends_on:
       - db
