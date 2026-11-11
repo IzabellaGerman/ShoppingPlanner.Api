@@ -132,6 +132,14 @@ Set the connection string in `src/ShoppingPlanner.Api/appsettings.Development.js
 }
 ```
 
+### Configure the JWT signing key
+
+The key is not stored in the repository. The API refuses to start if `Jwt:Key` is missing or shorter than 32 characters.
+
+- **Local:** `dotnet user-secrets set "Jwt:Key" "<random string, 32+ chars>" --project src/ShoppingPlanner.Api`
+- **Docker Compose:** works out of the box with a local-only default; override with the `JWT_KEY` environment variable.
+- **Production (Railway):** set the `Jwt__Key` environment variable.
+
 ### Run migrations
 
 ```bash
