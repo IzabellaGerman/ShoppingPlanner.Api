@@ -1,0 +1,20 @@
+using ShoppingPlanner.Api.Models;
+
+namespace ShoppingPlanner.Api.Repositories
+    {
+    /// <summary>
+    /// Доступ к спискам покупок и их позициям (позиции — часть агрегата списка).
+    /// Add/Remove только помечают изменения, в БД они уходят после SaveChangesAsync.
+    /// </summary>
+    public interface IShoppingListRepository
+        {
+        Task<List<ShoppingList>> GetAllAsync();
+        Task<ShoppingList?> GetByIdAsync(int id);
+        Task<ShoppingListItem?> GetItemAsync(int listId, int itemId);
+        void Add(ShoppingList list);
+        void Remove(ShoppingList list);
+        void AddItem(ShoppingListItem item);
+        void RemoveItem(ShoppingListItem item);
+        Task SaveChangesAsync();
+        }
+    }
