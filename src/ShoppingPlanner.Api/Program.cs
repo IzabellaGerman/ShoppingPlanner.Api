@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using ShoppingPlanner.Api.Data;
 using ShoppingPlanner.Api.Middleware;
 using ShoppingPlanner.Api.Models;
+using ShoppingPlanner.Api.Repositories;
 using ShoppingPlanner.Api.Services;
 using System.Text;
 
@@ -45,6 +46,8 @@ builder.Services.AddSwaggerGen(options =>
 // Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

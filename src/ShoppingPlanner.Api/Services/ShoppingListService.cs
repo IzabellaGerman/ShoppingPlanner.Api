@@ -1,37 +1,35 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShoppingPlanner.Api.Data;
-using ShoppingPlanner.Api.Dtos;
+﻿using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Models;
+using ShoppingPlanner.Api.Repositories;
 
 namespace ShoppingPlanner.Api.Services
     {
     public class ShoppingListService : IShoppingListService
         {
-        private readonly AppDbContext _db;
+        private readonly IShoppingListRepository _lists;
+        private readonly IProductRepository _products;
         private readonly ILogger<ShoppingListService> _logger;
 
-        public ShoppingListService(AppDbContext db, ILogger<ShoppingListService> logger)
+        public ShoppingListService(
+            IShoppingListRepository lists,
+            IProductRepository products,
+            ILogger<ShoppingListService> logger)
             {
-            _db = db;
+            _lists = lists;
+            _products = products;
             _logger = logger;
             }
 
         public async Task<IEnumerable<ShoppingListDto>> GetAllAsync()
             {
-            var lists = await _db.ShoppingLists
-                .Include(l => l.Items)
-                    .ThenInclude(i => i.Product)
-                .ToListAsync();
+            var lists = await _lists.GetAllAsync();
 
             return lists.Select(MapToDto);
             }
 
         public async Task<ShoppingListDto?> GetByIdAsync(int id)
             {
-            var list = await _db.ShoppingLists
-                .Include(l => l.Items)
-                    .ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(l => l.Id == id);
+            var list = await _lists.GetByIdAsync(id);
 
             return list is null ? null : MapToDto(list);
             }
@@ -46,7 +44,7 @@ namespace ShoppingPlanner.Api.Services
 
             foreach (var itemDto in dto.Items)
                 {
-                var product = await _db.Products.FindAsync(itemDto.ProductId);
+                var product = await _products.GetByIdAsync(itemDto.ProductId);
                 if (product is null)
                     {
                     throw new InvalidOperationException($"Product with id {itemDto.ProductId} not found.");
@@ -63,8 +61,8 @@ namespace ShoppingPlanner.Api.Services
                     });
                 }
 
-            _db.ShoppingLists.Add(list);
-            await _db.SaveChangesAsync();
+            _lists.Add(list);
+            await _lists.SaveChangesAsync();
 
             _logger.LogInformation("Created shopping list {ListId} with {ItemCount} items", list.Id, list.Items.Count);
             // Перезагружаем, чтобы Items.Product точно были подгружены
@@ -73,10 +71,7 @@ namespace ShoppingPlanner.Api.Services
 
         public async Task<ShoppingListDto?> UpdateAsync(int id, UpdateShoppingListDto dto)
             {
-            var list = await _db.ShoppingLists
-                .Include(l => l.Items)
-                    .ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(l => l.Id == id);
+            var list = await _lists.GetByIdAsync(id);
 
             if (list is null)
                 {
@@ -86,7 +81,7 @@ namespace ShoppingPlanner.Api.Services
 
             list.Name = dto.Name;
 
-            await _db.SaveChangesAsync();
+            await _lists.SaveChangesAsync();
 
             _logger.LogInformation("Updated shopping list {ListId}", list.Id);
 
@@ -95,24 +90,22 @@ namespace ShoppingPlanner.Api.Services
 
         public async Task<bool> DeleteAsync(int id)
             {
-            var list = await _db.ShoppingLists.FindAsync(id);
+            var list = await _lists.GetByIdAsync(id);
             if (list is null)
                 {
                 _logger.LogWarning("Shopping list {ListId} not found for deletion", id);
                 return false;
                 }
 
-            _db.ShoppingLists.Remove(list);
-            await _db.SaveChangesAsync();
+            _lists.Remove(list);
+            await _lists.SaveChangesAsync();
             _logger.LogInformation("Deleted shopping list {ListId}", id);
             return true;
             }
 
         public async Task<ShoppingListItemDto?> AddItemAsync(int listId, CreateShoppingListItemDto dto)
             {
-            var list = await _db.ShoppingLists
-         .Include(l => l.Items)
-         .FirstOrDefaultAsync(l => l.Id == listId);
+            var list = await _lists.GetByIdAsync(listId);
 
             if (list is null)
                 {
@@ -120,7 +113,7 @@ namespace ShoppingPlanner.Api.Services
                 return null;
                 }
 
-            var product = await _db.Products.FindAsync(dto.ProductId);
+            var product = await _products.GetByIdAsync(dto.ProductId);
             if (product is null)
                 {
                 _logger.LogWarning("Product {ProductId} not found for adding", dto.ProductId);
@@ -138,17 +131,15 @@ namespace ShoppingPlanner.Api.Services
                 IsCompleted = false
                 };
 
-            _db.ShoppingListItems.Add(item);
-            await _db.SaveChangesAsync();
+            _lists.AddItem(item);
+            await _lists.SaveChangesAsync();
             _logger.LogInformation("Added item {ItemId} (product {ProductId}) to shopping list {ListId}", item.Id, item.ProductId, listId);
             return MapItemToDto(item);
             }
 
         public async Task<ShoppingListItemDto?> UpdateItemAsync(int listId, int itemId, UpdateShoppingListItemDto dto)
             {
-            var item = await _db.ShoppingListItems
-                 .Include(i => i.Product)
-                 .FirstOrDefaultAsync(l => l.Id == itemId && l.ShoppingListId == listId);
+            var item = await _lists.GetItemAsync(listId, itemId);
 
             if (item is null)
                 {
@@ -166,15 +157,14 @@ namespace ShoppingPlanner.Api.Services
                 item.IsCompleted = dto.IsCompleted.Value;
                 }
 
-            await _db.SaveChangesAsync();
+            await _lists.SaveChangesAsync();
             _logger.LogInformation("Updated item {ItemId} in shopping list {ListId}", itemId, listId);
             return MapItemToDto(item);
             }
 
         public async Task<bool> RemoveItemAsync(int listId, int itemId)
             {
-            var item = await _db.ShoppingListItems
-                .FirstOrDefaultAsync(i => i.Id == itemId && i.ShoppingListId == listId);
+            var item = await _lists.GetItemAsync(listId, itemId);
 
             if (item is null)
                 {
@@ -182,8 +172,8 @@ namespace ShoppingPlanner.Api.Services
                 return false;
                 }
 
-            _db.ShoppingListItems.Remove(item);
-            await _db.SaveChangesAsync();
+            _lists.RemoveItem(item);
+            await _lists.SaveChangesAsync();
             _logger.LogInformation("Removed item {ItemId} in shopping list {ListId}", itemId, listId);
             return true;
             }

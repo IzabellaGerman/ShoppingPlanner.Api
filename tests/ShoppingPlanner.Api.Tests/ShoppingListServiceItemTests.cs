@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using ShoppingPlanner.Api.Data;
 using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Models;
+using ShoppingPlanner.Api.Repositories;
 using ShoppingPlanner.Api.Services;
 
 namespace ShoppingPlanner.Api.Tests;
@@ -28,7 +29,10 @@ public class ShoppingListServiceItemTests : IDisposable
         _db.Products.Add(new Product { Id = 2, Name = "Butter", CategoryId = 1, DefaultUnit = "pcs" });
         _db.SaveChanges();
 
-        _service = new ShoppingListService(_db, NullLogger<ShoppingListService>.Instance);
+        _service = new ShoppingListService(
+            new ShoppingListRepository(_db),
+            new ProductRepository(_db),
+            NullLogger<ShoppingListService>.Instance);
         }
 
     public void Dispose() => _db.Dispose();
