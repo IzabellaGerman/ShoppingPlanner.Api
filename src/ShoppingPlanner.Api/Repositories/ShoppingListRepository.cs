@@ -21,19 +21,21 @@ namespace ShoppingPlanner.Api.Repositories
                 .ToListAsync();
             }
 
-        public Task<ShoppingList?> GetByIdAsync(int id)
+        public Task<ShoppingList?> GetByIdAsync(int id, string userId)
             {
             return _db.ShoppingLists
                 .Include(l => l.Items)
                     .ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(l => l.Id == id);
+               .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);
             }
 
-        public Task<ShoppingListItem?> GetItemAsync(int listId, int itemId)
+        public Task<ShoppingListItem?> GetItemAsync(int listId, int itemId, string userId)
             {
             return _db.ShoppingListItems
                 .Include(i => i.Product)
-                .FirstOrDefaultAsync(i => i.Id == itemId && i.ShoppingListId == listId);
+                .FirstOrDefaultAsync(i => i.Id == itemId
+                && i.ShoppingListId == listId
+                && i.ShoppingList.UserId == userId);
             }
 
         public void Add(ShoppingList list) => _db.ShoppingLists.Add(list);

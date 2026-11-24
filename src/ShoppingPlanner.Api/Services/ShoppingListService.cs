@@ -27,9 +27,9 @@ namespace ShoppingPlanner.Api.Services
             return lists.Select(MapToDto);
             }
 
-        public async Task<ShoppingListDto?> GetByIdAsync(int id)
+        public async Task<ShoppingListDto?> GetByIdAsync(int id, string userId)
             {
-            var list = await _lists.GetByIdAsync(id);
+            var list = await _lists.GetByIdAsync(id, userId);
 
             return list is null ? null : MapToDto(list);
             }
@@ -70,9 +70,9 @@ namespace ShoppingPlanner.Api.Services
             return MapToDto(list);
             }
 
-        public async Task<ShoppingListDto?> UpdateAsync(int id, UpdateShoppingListDto dto)
+        public async Task<ShoppingListDto?> UpdateAsync(int id, UpdateShoppingListDto dto, string userId)
             {
-            var list = await _lists.GetByIdAsync(id);
+            var list = await _lists.GetByIdAsync(id, userId);
 
             if (list is null)
                 {
@@ -89,9 +89,9 @@ namespace ShoppingPlanner.Api.Services
             return MapToDto(list);
             }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id, string userId)
             {
-            var list = await _lists.GetByIdAsync(id);
+            var list = await _lists.GetByIdAsync(id, userId);
             if (list is null)
                 {
                 _logger.LogWarning("Shopping list {ListId} not found for deletion", id);
@@ -104,9 +104,10 @@ namespace ShoppingPlanner.Api.Services
             return true;
             }
 
-        public async Task<ShoppingListItemDto?> AddItemAsync(int listId, CreateShoppingListItemDto dto)
+        public async Task<ShoppingListItemDto?> AddItemAsync(int listId, CreateShoppingListItemDto dto,
+            string userId)
             {
-            var list = await _lists.GetByIdAsync(listId);
+            var list = await _lists.GetByIdAsync(listId, userId);
 
             if (list is null)
                 {
@@ -138,9 +139,9 @@ namespace ShoppingPlanner.Api.Services
             return MapItemToDto(item);
             }
 
-        public async Task<ShoppingListItemDto?> UpdateItemAsync(int listId, int itemId, UpdateShoppingListItemDto dto)
+        public async Task<ShoppingListItemDto?> UpdateItemAsync(int listId, int itemId, UpdateShoppingListItemDto dto, string userId)
             {
-            var item = await _lists.GetItemAsync(listId, itemId);
+            var item = await _lists.GetItemAsync(listId, itemId, userId);
 
             if (item is null)
                 {
@@ -163,13 +164,13 @@ namespace ShoppingPlanner.Api.Services
             return MapItemToDto(item);
             }
 
-        public async Task<bool> RemoveItemAsync(int listId, int itemId)
+        public async Task<bool> RemoveItemAsync(int listId, int itemId, string userId)
             {
-            var item = await _lists.GetItemAsync(listId, itemId);
+            var item = await _lists.GetItemAsync(listId, itemId, userId);
 
             if (item is null)
                 {
-                _logger.LogWarning("Shopping list item {ItemId} not found in list {ListId} for deletion", itemId, listId);
+                _logger.LogWarning("Shopping list item {ItemId} not found in list {ListId} for deletion for user {UserId}", itemId, listId, userId);
                 return false;
                 }
 
