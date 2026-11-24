@@ -14,6 +14,8 @@ public class ShoppingListServiceTests : IDisposable
     private readonly AppDbContext _db;
     private readonly ShoppingListService _service;
 
+    private const string TestUserId = "test-user";
+
     public ShoppingListServiceTests()
         {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -41,7 +43,7 @@ public class ShoppingListServiceTests : IDisposable
         // Arrange — база пустая (продуктов нет)
 
         // Act
-        var result = await _service.GetAllAsync();
+        var result = await _service.GetAllAsync(TestUserId);
 
         // Assert
         Assert.Empty(result);
@@ -59,7 +61,7 @@ public class ShoppingListServiceTests : IDisposable
             }
             };
 
-        var result = await _service.CreateAsync(dto);
+        var result = await _service.CreateAsync(dto, TestUserId);
 
         Assert.NotNull(result);
         Assert.Equal("Weekend shopping", result.Name);
@@ -75,10 +77,11 @@ public class ShoppingListServiceTests : IDisposable
             {
             Name = "Test list",
             Items = new List<CreateShoppingListItemDto>()  // пустой список — это ок
-            });
+            },
+            TestUserId);
 
         // Act
-        var result = await _service.GetByIdAsync(created.Id);
+        var result = await _service.GetByIdAsync(created.Id, TestUserId);
 
         // Assert
         Assert.NotNull(result);
@@ -92,7 +95,7 @@ public class ShoppingListServiceTests : IDisposable
 
 
         //Act
-        var result = await _service.GetByIdAsync(999);
+        var result = await _service.GetByIdAsync(999, TestUserId);
 
         //Assert
         Assert.Null(result);
@@ -107,13 +110,14 @@ public class ShoppingListServiceTests : IDisposable
             {
             Name = "Test list",
             Items = new List<CreateShoppingListItemDto>()
-            });
+            },
+            TestUserId);
 
         //Act
-        await  _service.DeleteAsync(created.Id);
+        await  _service.DeleteAsync(created.Id, TestUserId);
 
         //Assert
-        var result = await _service.GetByIdAsync(created.Id);
+        var result = await _service.GetByIdAsync(created.Id, TestUserId);
         Assert.Null(result);
 
         }
@@ -127,11 +131,12 @@ public class ShoppingListServiceTests : IDisposable
             {
             Name = "Test list",
             Items = new List<CreateShoppingListItemDto>()
-            });
+            },
+            TestUserId);
 
         //Act
         var dto = new UpdateShoppingListDto { Name = "New name"};
-        created = await _service.UpdateAsync(created.Id, dto);
+        created = await _service.UpdateAsync(created.Id, dto, TestUserId);
 
         //Assert
         Assert.Equal("New name", created.Name);

@@ -3,6 +3,7 @@ using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ShoppingPlanner.Api.Controllers;
 
@@ -22,7 +23,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ShoppingListDto>>> GetAll()
         {
-        var lists = await _shoppingListService.GetAllAsync();
+        var lists = await _shoppingListService.GetAllAsync(GetUserId());
         return Ok(lists);
         }
 
@@ -31,7 +32,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShoppingListDto>> GetById(int id)
         {
-        var list = await _shoppingListService.GetByIdAsync(id);
+        var list = await _shoppingListService.GetByIdAsync(id, GetUserId());
         if (list is null)
             {
             return NotFound();
@@ -45,7 +46,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ShoppingListDto>> Create(CreateShoppingListDto dto)
         {
-        var created = await _shoppingListService.CreateAsync(dto);
+        var created = await _shoppingListService.CreateAsync(dto, GetUserId() );
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -55,7 +56,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ShoppingListDto>> Update(int id, UpdateShoppingListDto dto)
         {
-        var updated = await _shoppingListService.UpdateAsync(id, dto);
+        var updated = await _shoppingListService.UpdateAsync(id, dto, GetUserId());
         if (updated is null)
             {
             return NotFound();
@@ -69,7 +70,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
         {
-        var deleted = await _shoppingListService.DeleteAsync(id);
+        var deleted = await _shoppingListService.DeleteAsync(id, GetUserId());
         if (!deleted)
             {
             return NotFound();
@@ -84,7 +85,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ShoppingListItemDto>> AddItem(int id, CreateShoppingListItemDto dto)
         {
-        var added = await _shoppingListService.AddItemAsync(id, dto);
+        var added = await _shoppingListService.AddItemAsync(id, dto, GetUserId());
         if (added is null)
             {
             return NotFound();
@@ -99,7 +100,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShoppingListItemDto>> UpdateItem(int id, int itemId, UpdateShoppingListItemDto dto)
         {
-        var updated = await _shoppingListService.UpdateItemAsync(id, itemId, dto);
+        var updated = await _shoppingListService.UpdateItemAsync(id, itemId, dto, GetUserId());
         if (updated is null)
             {
             return NotFound();
@@ -113,7 +114,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RemoveItem(int id, int itemId)
         {
-        var deleted = await _shoppingListService.RemoveItemAsync(id, itemId);
+        var deleted = await _shoppingListService.RemoveItemAsync(id, itemId, GetUserId());
         if (!deleted)
             {
             return NotFound();
@@ -121,5 +122,10 @@ public class ShoppingListsController : ControllerBase
 
         return NoContent();
 
+        }
+
+    private string? GetUserId()
+        {
+        return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
     }

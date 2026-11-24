@@ -8,9 +8,9 @@ namespace ShoppingPlanner.Api.Repositories
     /// </summary>
     public interface IShoppingListRepository
         {
-        Task<List<ShoppingList>> GetAllAsync();
-        Task<ShoppingList?> GetByIdAsync(int id);
-        Task<ShoppingListItem?> GetItemAsync(int listId, int itemId);
+        Task<List<ShoppingList>> GetAllAsync(string userId);
+        Task<ShoppingList?> GetByIdAsync(int id, string userId);
+        Task<ShoppingListItem?> GetItemAsync(int listId, int itemId, string userId);
         void Add(ShoppingList list);
         void Remove(ShoppingList list);
         void AddItem(ShoppingListItem item);
