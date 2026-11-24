@@ -19,6 +19,8 @@ namespace ShoppingPlanner.Api.Tests
 
         private readonly ShoppingListService _service;
 
+        private const string TestUserId = "test-user";
+
         public ShoppingListServiceGetByIdTests()
             {
             _service = new ShoppingListService(_lists.Object, _products.Object,
@@ -29,10 +31,10 @@ namespace ShoppingPlanner.Api.Tests
         public async Task GetByIdAsync_ListNotFound_ReturnsNull()
             {
             //Arrange
-            _lists.Setup(r => r.GetByIdAsync(99)).Returns(Task.FromResult((ShoppingList?)null));
+            _lists.Setup(r => r.GetByIdAsync(99, TestUserId)).Returns(Task.FromResult((ShoppingList?)null));
 
             //Act
-            var result = await _service.GetByIdAsync(99);
+            var result = await _service.GetByIdAsync(99, TestUserId);
 
             //Assert
             Assert.Null(result);
@@ -46,10 +48,10 @@ namespace ShoppingPlanner.Api.Tests
             //Arrange
 
             //Act
-            await _service.GetByIdAsync(7);
+            await _service.GetByIdAsync(7, TestUserId);
 
             //Assert
-            _lists.Verify(r => r.GetByIdAsync(7), Times.Once);
+            _lists.Verify(r => r.GetByIdAsync(7, TestUserId), Times.Once);
 
             }
 
@@ -61,14 +63,15 @@ namespace ShoppingPlanner.Api.Tests
             var list = new ShoppingList
                 {
                 Id = 1,
+                UserId = TestUserId,
                 Name = "Weekly",
                 CreatedAt = new DateTime(2026, 1, 15)
                 };
 
-            _lists.Setup(r => r.GetByIdAsync(1)).Returns(Task.FromResult<ShoppingList?>(list));
+            _lists.Setup(r => r.GetByIdAsync(1, TestUserId)).Returns(Task.FromResult<ShoppingList?>(list));
 
             //Act
-            var result = await _service.GetByIdAsync(1);
+            var result = await _service.GetByIdAsync(1, TestUserId);
 
             //Assert
             Assert.NotNull(result);

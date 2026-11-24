@@ -15,6 +15,7 @@ public class ShoppingListServiceItemTests : IDisposable
     private readonly AppDbContext _db;
     private readonly ShoppingListService _service;
 
+    private const string TestUserId = "test-user";
     public ShoppingListServiceItemTests()
         {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -40,9 +41,10 @@ public class ShoppingListServiceItemTests : IDisposable
     private Task<ShoppingListDto> CreateEmptyListAsync(string name = "Test list")
         => _service.CreateAsync(new CreateShoppingListDto
             {
-            Name = name,
+            Name = name,            
             Items = new List<CreateShoppingListItemDto>()
-            });
+            },
+            TestUserId);
 
     [Fact]
     public async Task AddItemAsync_ExistingListAndProduct_ReturnsItemAndSavesIt()
@@ -52,7 +54,7 @@ public class ShoppingListServiceItemTests : IDisposable
         var dto = new CreateShoppingListItemDto { ProductId = 1, Quantity = 2, Note = "low fat" };
 
         // Act
-        var result = await _service.AddItemAsync(list.Id, dto);
+        var result = await _service.AddItemAsync(list.Id, dto, TestUserId);
 
         // Assert
         Assert.NotNull(result);
@@ -71,7 +73,7 @@ public class ShoppingListServiceItemTests : IDisposable
         var dto = new CreateShoppingListItemDto { ProductId = 999, Quantity = 1 };
 
         // Act
-        var result = await _service.AddItemAsync(list.Id, dto);
+        var result = await _service.AddItemAsync(list.Id, dto, TestUserId);
 
         // Assert
         Assert.Null(result);
@@ -84,11 +86,11 @@ public class ShoppingListServiceItemTests : IDisposable
         // Arrange
         var list = await CreateEmptyListAsync();
         var item = await _service.AddItemAsync(list.Id,
-            new CreateShoppingListItemDto { ProductId = 1, Quantity = 2 });
+            new CreateShoppingListItemDto { ProductId = 1, Quantity = 2 }, TestUserId);
 
         // Act — Quantity = null означает «не менять»
         var result = await _service.UpdateItemAsync(list.Id, item!.Id,
-            new UpdateShoppingListItemDto { IsCompleted = true });
+            new UpdateShoppingListItemDto { IsCompleted = true }, TestUserId);
 
         // Assert
         Assert.NotNull(result);
@@ -103,11 +105,11 @@ public class ShoppingListServiceItemTests : IDisposable
         var listA = await CreateEmptyListAsync("A");
         var listB = await CreateEmptyListAsync("B");
         var item = await _service.AddItemAsync(listA.Id,
-            new CreateShoppingListItemDto { ProductId = 1, Quantity = 2 });
+            new CreateShoppingListItemDto { ProductId = 1, Quantity = 2 }, TestUserId);
 
         // Act — позиция из списка A, но обращаемся через список B
         var result = await _service.UpdateItemAsync(listB.Id, item!.Id,
-            new UpdateShoppingListItemDto { Quantity = 5 });
+            new UpdateShoppingListItemDto { Quantity = 5 }, TestUserId);
 
         // Assert
         Assert.Null(result);
@@ -122,10 +124,10 @@ public class ShoppingListServiceItemTests : IDisposable
         var listA = await CreateEmptyListAsync("A");
         var listB = await CreateEmptyListAsync("B");
         var item = await _service.AddItemAsync(listA.Id,
-            new CreateShoppingListItemDto { ProductId = 2, Quantity = 1 });
+            new CreateShoppingListItemDto { ProductId = 2, Quantity = 1 }, TestUserId);
 
         // Act
-        var removed = await _service.RemoveItemAsync(listB.Id, item!.Id);
+        var removed = await _service.RemoveItemAsync(listB.Id, item!.Id, TestUserId);
 
         // Assert
         Assert.False(removed);
