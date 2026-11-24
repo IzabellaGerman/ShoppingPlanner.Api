@@ -13,9 +13,9 @@ namespace ShoppingPlanner.Api.Repositories
             _db = db;
             }
 
-        public Task<List<ShoppingList>> GetAllAsync()
+        public Task<List<ShoppingList>> GetAllAsync(string userId)
             {
-            return _db.ShoppingLists
+            return _db.ShoppingLists.Where(l => l.UserId == userId)
                 .Include(l => l.Items)
                     .ThenInclude(i => i.Product)
                 .ToListAsync();

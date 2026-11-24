@@ -23,7 +23,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ShoppingListDto>>> GetAll()
         {
-        var lists = await _shoppingListService.GetAllAsync();
+        var lists = await _shoppingListService.GetAllAsync(GetUserId());
         return Ok(lists);
         }
 
@@ -46,8 +46,7 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ShoppingListDto>> Create(CreateShoppingListDto dto)
         {
-        var created = await _shoppingListService.CreateAsync(dto,
-            User.FindFirstValue(ClaimTypes.NameIdentifier) );
+        var created = await _shoppingListService.CreateAsync(dto, GetUserId() );
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -123,5 +122,10 @@ public class ShoppingListsController : ControllerBase
 
         return NoContent();
 
+        }
+
+    private string? GetUserId()
+        {
+        return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
     }

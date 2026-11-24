@@ -20,9 +20,9 @@ namespace ShoppingPlanner.Api.Services
             _logger = logger;
             }
 
-        public async Task<IEnumerable<ShoppingListDto>> GetAllAsync()
+        public async Task<IEnumerable<ShoppingListDto>> GetAllAsync(string userId)
             {
-            var lists = await _lists.GetAllAsync();
+            var lists = await _lists.GetAllAsync(userId);
 
             return lists.Select(MapToDto);
             }
