@@ -3,6 +3,7 @@ using ShoppingPlanner.Api.Dtos;
 using ShoppingPlanner.Api.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ShoppingPlanner.Api.Controllers;
 
@@ -45,7 +46,8 @@ public class ShoppingListsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ShoppingListDto>> Create(CreateShoppingListDto dto)
         {
-        var created = await _shoppingListService.CreateAsync(dto);
+        var created = await _shoppingListService.CreateAsync(dto,
+            User.FindFirstValue(ClaimTypes.NameIdentifier) );
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 

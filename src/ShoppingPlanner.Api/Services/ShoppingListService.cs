@@ -34,10 +34,11 @@ namespace ShoppingPlanner.Api.Services
             return list is null ? null : MapToDto(list);
             }
 
-        public async Task<ShoppingListDto> CreateAsync(CreateShoppingListDto dto)
+        public async Task<ShoppingListDto> CreateAsync(CreateShoppingListDto dto, string userId)
             {
             var list = new ShoppingList
                 {
+                UserId = userId,
                 Name = dto.Name,
                 Items = new List<ShoppingListItem>()
                 };

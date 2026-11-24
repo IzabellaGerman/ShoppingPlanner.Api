@@ -6,7 +6,7 @@ namespace ShoppingPlanner.Api.Services
         {
         Task<IEnumerable<ShoppingListDto>> GetAllAsync();
         Task<ShoppingListDto?> GetByIdAsync(int id);
-        Task<ShoppingListDto> CreateAsync(CreateShoppingListDto dto);
+        Task<ShoppingListDto> CreateAsync(CreateShoppingListDto dto, string userId);
         Task<ShoppingListDto?> UpdateAsync(int id, UpdateShoppingListDto dto);
         Task<bool> DeleteAsync(int id);
         Task<ShoppingListItemDto?> AddItemAsync(int listId, CreateShoppingListItemDto dto);

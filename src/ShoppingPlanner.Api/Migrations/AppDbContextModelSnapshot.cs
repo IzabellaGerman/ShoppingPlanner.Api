@@ -295,7 +295,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1726),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7111),
                             DefaultUnit = "l",
                             Name = "Milk"
                         },
@@ -303,7 +303,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 2,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1729),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7113),
                             DefaultUnit = "kg",
                             Name = "Butter"
                         },
@@ -311,7 +311,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 3,
                             CategoryId = 2,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1730),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7114),
                             DefaultUnit = "pcs",
                             Name = "Sourdough Bread"
                         },
@@ -319,7 +319,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 4,
                             CategoryId = 2,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1730),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7115),
                             DefaultUnit = "pcs",
                             Name = "Baguette"
                         },
@@ -327,7 +327,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 5,
                             CategoryId = 3,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1731),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7115),
                             DefaultUnit = "kg",
                             Name = "Carrots"
                         },
@@ -335,7 +335,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 6,
                             CategoryId = 3,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1732),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7116),
                             DefaultUnit = "kg",
                             Name = "Tomatoes"
                         },
@@ -343,7 +343,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 7,
                             CategoryId = 3,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1733),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7142),
                             DefaultUnit = "kg",
                             Name = "Spinach"
                         },
@@ -351,7 +351,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 8,
                             CategoryId = 4,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1734),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7143),
                             DefaultUnit = "kg",
                             Name = "Apples"
                         },
@@ -359,7 +359,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 9,
                             CategoryId = 4,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1734),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7144),
                             DefaultUnit = "kg",
                             Name = "Bananas"
                         },
@@ -367,7 +367,7 @@ namespace ShoppingPlanner.Api.Migrations
                         {
                             Id = 10,
                             CategoryId = 5,
-                            CreatedAt = new DateTime(2026, 7, 8, 9, 41, 23, 795, DateTimeKind.Utc).AddTicks(1735),
+                            CreatedAt = new DateTime(2026, 11, 24, 11, 51, 6, 374, DateTimeKind.Utc).AddTicks(7145),
                             DefaultUnit = "l",
                             Name = "Orange Juice"
                         });
@@ -388,7 +388,13 @@ namespace ShoppingPlanner.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ShoppingLists");
                 });
@@ -485,6 +491,17 @@ namespace ShoppingPlanner.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("ShoppingPlanner.Api.Models.ShoppingList", b =>
+                {
+                    b.HasOne("ShoppingPlanner.Api.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ShoppingPlanner.Api.Models.ShoppingListItem", b =>
