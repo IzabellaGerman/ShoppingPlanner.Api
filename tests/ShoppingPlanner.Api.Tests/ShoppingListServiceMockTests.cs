@@ -144,7 +144,6 @@ public class ShoppingListServiceMockTests
         _lists.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
-
     [Fact]
     public async Task CreateAsync_AllProductsExist_ReturnDTO()
         {
@@ -178,5 +177,4 @@ public class ShoppingListServiceMockTests
 
         _lists.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
-
     }
