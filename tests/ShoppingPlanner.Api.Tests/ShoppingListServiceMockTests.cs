@@ -143,4 +143,38 @@ public class ShoppingListServiceMockTests
         _lists.Verify(r => r.Remove(It.IsAny<ShoppingList>()), Times.Never);
         _lists.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
+
+    [Fact]
+    public async Task CreateAsync_AllProductsExist_ReturnDTO()
+        {
+        // Arrange
+        var dto = new CreateShoppingListDto
+            {
+            Name = "Party",
+            Items = new List<CreateShoppingListItemDto>
+                {
+                new() { ProductId = 42, Quantity = 1 },
+                new() { ProductId = 41, Quantity = 2 }
+                }
+            };
+
+        _products.Setup(r => r.GetByIdAsync(41)).ReturnsAsync(Milk(41));
+        _products.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(Milk(42));
+
+        // Act
+        var result = await _service.CreateAsync(dto, TestUserId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Party", result.Name);
+        Assert.Equal(2, result.Items.Count);
+
+        _lists.Verify(r => r.Add(It.Is<ShoppingList>(l =>
+            l.Name == "Party" &&
+            l.UserId == TestUserId &&
+            l.Items.Count == 2)),
+            Times.Once);
+
+        _lists.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
     }
